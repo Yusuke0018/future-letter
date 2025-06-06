@@ -554,16 +554,6 @@
             border: 1px solid rgba(102, 126, 234, 0.5);
         }
 
-        .calendar-day.has-created {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid rgba(76, 175, 80, 0.5);
-        }
-
-        .calendar-day.has-both {
-            background: linear-gradient(45deg, rgba(76, 175, 80, 0.2) 50%, rgba(102, 126, 234, 0.2) 50%);
-            border: 1px solid rgba(102, 126, 234, 0.5);
-        }
-
         .calendar-day.today {
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -768,17 +758,12 @@
                         <div class="category-option" onclick="selectCategory('someday')" data-category="someday">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
                             <div style="font-weight: bold;">いつかの自分</div>
-                            <div style="font-size: 0.8rem; color: #888;">ランダムな未来に届く</div>
+                            <div style="font-size: 0.8rem; color: #888;">いつ届くかは秘密です</div>
                         </div>
                         <div class="category-option" onclick="selectCategory('date')" data-category="date">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
                             <div style="font-weight: bold;">特定の日付</div>
                             <div style="font-size: 0.8rem; color: #888;">決めた日に届く</div>
-                        </div>
-                        <div class="category-option" onclick="selectCategory('event')" data-category="event">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎊</div>
-                            <div style="font-weight: bold;">特別な日</div>
-                            <div style="font-size: 0.8rem; color: #888;">記念日に届く</div>
                         </div>
                     </div>
                 </div>
@@ -786,18 +771,6 @@
                 <div id="date-selector" class="form-group" style="display: none;">
                     <label class="form-label">配信日を選択</label>
                     <input type="date" id="delivery-date" class="form-input">
-                </div>
-
-                <div id="event-selector" class="form-group" style="display: none;">
-                    <label class="form-label">イベントを選択</label>
-                    <select id="event-type" class="form-select">
-                        <option value="">選択してください</option>
-                        <option value="birthday">誕生日</option>
-                        <option value="new-year">新年</option>
-                        <option value="anniversary">記念日</option>
-                        <option value="graduation">卒業式</option>
-                        <option value="custom">カスタム</option>
-                    </select>
                 </div>
 
                 <div class="form-group">
@@ -838,7 +811,6 @@
                 <div class="filter-chip" data-filter="future" onclick="filterLetters('future')">未来の手紙</div>
                 <div class="filter-chip" data-filter="someday" onclick="filterLetters('someday')">いつかの自分</div>
                 <div class="filter-chip" data-filter="date" onclick="filterLetters('date')">特定の日付</div>
-                <div class="filter-chip" data-filter="event" onclick="filterLetters('event')">特別な日</div>
             </div>
 
             <!-- 統計情報 -->
@@ -883,20 +855,6 @@
                 </div>
                 <div class="calendar-grid" id="calendar-grid">
                     <!-- 動的に生成 -->
-                </div>
-                <div style="margin-top: 1rem; display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 20px; height: 20px; background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.5); border-radius: 0.25rem;"></div>
-                        <span style="font-size: 0.9rem; color: #888;">手紙を書いた日</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 20px; height: 20px; background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.5); border-radius: 0.25rem;"></div>
-                        <span style="font-size: 0.9rem; color: #888;">手紙が届いた日</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div style="width: 20px; height: 20px; background: linear-gradient(45deg, rgba(76, 175, 80, 0.2) 50%, rgba(102, 126, 234, 0.2) 50%); border: 1px solid rgba(102, 126, 234, 0.5); border-radius: 0.25rem;"></div>
-                        <span style="font-size: 0.9rem; color: #888;">両方</span>
-                    </div>
                 </div>
             </div>
         </section>
@@ -996,7 +954,6 @@
             
             // 日付選択を表示/非表示
             document.getElementById('date-selector').style.display = category === 'date' ? 'block' : 'none';
-            document.getElementById('event-selector').style.display = category === 'event' ? 'block' : 'none';
             
             // 日付の最小値を明日に設定
             if (category === 'date') {
@@ -1018,18 +975,11 @@
             const title = document.getElementById('letter-title').value || '無題の手紙';
             const content = document.getElementById('letter-content').value;
             let deliveryDate = null;
-            let eventType = null;
             
             if (selectedCategory === 'date') {
                 deliveryDate = document.getElementById('delivery-date').value;
                 if (!deliveryDate) {
                     showToast('配信日を選択してください');
-                    return;
-                }
-            } else if (selectedCategory === 'event') {
-                eventType = document.getElementById('event-type').value;
-                if (!eventType) {
-                    showToast('イベントを選択してください');
                     return;
                 }
             } else if (selectedCategory === 'someday') {
@@ -1048,7 +998,6 @@
                 content,
                 category: selectedCategory,
                 deliveryDate,
-                eventType,
                 createdAt: new Date().toISOString(),
                 isRead: false,
                 images: [...tempImages] // 画像データをコピー
@@ -1066,13 +1015,11 @@
             document.getElementById('letter-title').value = '';
             document.getElementById('letter-content').value = '';
             document.getElementById('delivery-date').value = '';
-            document.getElementById('event-type').value = '';
             selectedCategory = null;
             document.querySelectorAll('.category-option').forEach(opt => {
                 opt.classList.remove('selected');
             });
             document.getElementById('date-selector').style.display = 'none';
-            document.getElementById('event-selector').style.display = 'none';
             
             // 画像もクリア
             tempImages = [];
@@ -1098,14 +1045,6 @@
             const todaysLetters = letters.filter(letter => {
                 if (letter.deliveryDate && letter.deliveryDate <= today) {
                     return true;
-                }
-                if (letter.eventType) {
-                    // イベントベースの配信チェック（簡易版）
-                    const now = new Date();
-                    if (letter.eventType === 'new-year' && now.getMonth() === 0 && now.getDate() === 1) {
-                        return true;
-                    }
-                    // 他のイベントも同様に実装
                 }
                 return false;
             });
@@ -1156,8 +1095,8 @@
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `letter-card ${isFuture ? 'future' : ''} ${letter.images && letter.images.length > 0 ? 'has-images' : ''}`;
                 
-                // 配信日の表示条件を変更：未来の日付は表示しない
-                const showDeliveryDate = deliveryDate && letter.deliveryDate <= today;
+                // 未来の手紙の配信日を隠す
+                const displayDeliveryDate = isFuture ? '？？？' : deliveryDate;
                 
                 cardDiv.innerHTML = `
                     <div class="letter-actions">
@@ -1165,7 +1104,7 @@
                     </div>
                     <div class="letter-content" data-letter-id="${letter.id}">
                         <div class="letter-date">作成日: ${createdDate}</div>
-                        ${showDeliveryDate ? `<div class="letter-date">配信日: ${deliveryDate}</div>` : ''}
+                        ${deliveryDate ? `<div class="letter-date">配信日: ${displayDeliveryDate}</div>` : ''}
                         <h3 style="margin: 1rem 0;">${escapeHtml(letter.title)}</h3>
                         <div class="letter-preview">${escapeHtml(letter.content)}</div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1195,8 +1134,7 @@
         function getCategoryName(category) {
             const names = {
                 'someday': 'いつかの自分',
-                'date': '特定の日付',
-                'event': '特別な日'
+                'date': '特定の日付'
             };
             return names[category] || category;
         }
@@ -1220,8 +1158,7 @@
                 'past': '過去の手紙',
                 'future': '未来の手紙',
                 'someday': 'いつかの自分',
-                'date': '特定の日付',
-                'event': '特別な日'
+                'date': '特定の日付'
             };
             return names[filter] || filter;
         }
@@ -1238,9 +1175,10 @@
             modalTitle.textContent = '手紙の詳細';
             
             const createdDate = new Date(letter.createdAt).toLocaleDateString('ja-JP');
-            const deliveryDate = letter.deliveryDate ? new Date(letter.deliveryDate).toLocaleDateString('ja-JP') : '';
             const today = new Date().toISOString().split('T')[0];
-            const showDeliveryDate = deliveryDate && letter.deliveryDate <= today;
+            const isFuture = letter.deliveryDate && letter.deliveryDate > today;
+            const displayDeliveryDate = letter.deliveryDate ? 
+                (isFuture ? '？？？' : new Date(letter.deliveryDate).toLocaleDateString('ja-JP')) : '';
             
             let imagesHtml = '';
             if (letter.images && letter.images.length > 0) {
@@ -1259,7 +1197,7 @@
             modalBody.innerHTML = `
                 <div style="margin-bottom: 1rem;">
                     <small style="color: #888;">作成日: ${createdDate}</small>
-                    ${showDeliveryDate ? `<br><small style="color: #888;">配信日: ${deliveryDate}</small>` : ''}
+                    ${displayDeliveryDate ? `<br><small style="color: #888;">配信予定日: ${displayDeliveryDate}</small>` : ''}
                 </div>
                 <h2 style="margin-bottom: 1rem;">${escapeHtml(letter.title)}</h2>
                 <div style="white-space: pre-wrap; line-height: 1.8;">${escapeHtml(letter.content)}</div>
@@ -1329,6 +1267,13 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             const minDate = letter.category === 'date' ? tomorrow.toISOString().split('T')[0] : '';
             
+            // 「いつかの自分」カテゴリーの場合は配信日を非表示
+            const isRandomDelivery = letter.category === 'someday';
+            const deliveryDateInput = isRandomDelivery ? 
+                `<input type="date" id="edit-date" class="form-input" value="${letter.deliveryDate || ''}" disabled style="display: none;">
+                 <div class="form-input" style="background: rgba(255, 255, 255, 0.03); color: #888;">配信日は秘密です 🎁</div>` :
+                `<input type="date" id="edit-date" class="form-input" value="${letter.deliveryDate || ''}" ${letter.category !== 'date' ? 'disabled' : ''} ${letter.category === 'date' ? `min="${minDate}"` : ''}>`;
+            
             modalBody.innerHTML = `
                 <form class="edit-form" onsubmit="updateLetter(event, '${letter.id}')">
                     <div class="form-group">
@@ -1337,8 +1282,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">配信日 ${letter.category !== 'date' ? '（このカテゴリーでは変更できません）' : ''}</label>
-                        <input type="date" id="edit-date" class="form-input" value="${letter.deliveryDate || ''}" ${letter.category !== 'date' ? 'disabled' : ''} ${letter.category === 'date' ? `min="${minDate}"` : ''}>
+                        <label class="form-label">配信日 ${letter.category !== 'date' && !isRandomDelivery ? '（このカテゴリーでは変更できません）' : ''}</label>
+                        ${deliveryDateInput}
                     </div>
                     
                     <div class="form-group">
@@ -1385,6 +1330,7 @@
             letter.content = document.getElementById('edit-content').value;
             letter.images = [...editingImages]; // 画像データを更新
             
+            // 「いつかの自分」カテゴリー以外の場合のみ配信日を更新
             if (letter.category === 'date') {
                 letter.deliveryDate = document.getElementById('edit-date').value;
             }
@@ -1426,7 +1372,6 @@
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const grid = document.getElementById('calendar-grid');
-            const today = new Date().toISOString().split('T')[0];
             
             grid.innerHTML = '';
             
@@ -1453,35 +1398,23 @@
                 dayElement.textContent = day;
                 
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const today = new Date().toISOString().split('T')[0];
                 
                 // 今日かチェック
                 if (dateStr === today) {
                     dayElement.classList.add('today');
                 }
                 
-                // 手紙の作成日と配信日をチェック
-                let hasCreated = false;
-                let hasDelivery = false;
-                
-                letters.forEach(letter => {
-                    // 作成日をチェック
-                    const createdDate = letter.createdAt.split('T')[0];
-                    if (createdDate === dateStr) {
-                        hasCreated = true;
+                // 手紙があるかチェック（過去の手紙のみ表示）
+                const hasLetter = letters.some(l => {
+                    if (l.deliveryDate === dateStr) {
+                        // 配信日が今日以前の場合のみ表示
+                        return l.deliveryDate <= today;
                     }
-                    
-                    // 配信日をチェック（過去の日付のみ表示）
-                    if (letter.deliveryDate === dateStr && dateStr <= today) {
-                        hasDelivery = true;
-                    }
+                    return false;
                 });
                 
-                // マークを付ける
-                if (hasCreated && hasDelivery) {
-                    dayElement.classList.add('has-both');
-                } else if (hasCreated) {
-                    dayElement.classList.add('has-created');
-                } else if (hasDelivery) {
+                if (hasLetter) {
                     dayElement.classList.add('has-letter');
                 }
                 
@@ -1506,32 +1439,10 @@
         // 特定の日付の手紙を表示
         function showLettersForDate(date) {
             const today = new Date().toISOString().split('T')[0];
+            // 過去の手紙のみ表示
+            const dateLetters = letters.filter(l => l.deliveryDate === date && l.deliveryDate <= today);
             
-            // 作成日と配信日の両方をチェック
-            const createdLetters = letters.filter(l => l.createdAt.split('T')[0] === date);
-            const deliveredLetters = letters.filter(l => l.deliveryDate === date && date <= today);
-            
-            const allLettersForDate = [];
-            
-            // 作成日の手紙を追加
-            createdLetters.forEach(letter => {
-                allLettersForDate.push({
-                    ...letter,
-                    displayType: '作成'
-                });
-            });
-            
-            // 配信日の手紙を追加（重複を避ける）
-            deliveredLetters.forEach(letter => {
-                if (!createdLetters.find(l => l.id === letter.id)) {
-                    allLettersForDate.push({
-                        ...letter,
-                        displayType: '配信'
-                    });
-                }
-            });
-            
-            if (allLettersForDate.length === 0) {
+            if (dateLetters.length === 0) {
                 showToast('この日に手紙はありません');
                 return;
             }
@@ -1539,18 +1450,16 @@
             // モーダルで表示
             const modal = document.getElementById('letter-modal');
             const modalBody = document.getElementById('modal-body');
-            const modalTitle = document.getElementById('modal-title');
-            
-            modalTitle.textContent = `${new Date(date).toLocaleDateString('ja-JP')} の手紙`;
             
             modalBody.innerHTML = `
+                <h3>${new Date(date).toLocaleDateString('ja-JP')} の手紙</h3>
                 <div style="margin-top: 1rem;">
-                    ${allLettersForDate.map(letter => `
+                    ${dateLetters.map(letter => `
                         <div style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; margin-bottom: 1rem; cursor: pointer;"
                              onclick="closeModal(); openLetter('${letter.id}')">
                             <h4>${escapeHtml(letter.title)}</h4>
                             <p style="color: #888; font-size: 0.9rem;">
-                                ${letter.displayType}日・${getCategoryName(letter.category)}
+                                ${getCategoryName(letter.category)}
                                 ${letter.images && letter.images.length > 0 ? `・📷 ${letter.images.length}枚の画像` : ''}
                             </p>
                         </div>

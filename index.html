@@ -583,6 +583,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            font-size: 1rem;
         }
 
         .calendar-day:hover {
@@ -710,6 +711,16 @@
 
             .thread-letter.reply {
                 margin-left: 1rem;
+            }
+            
+            .calendar-day {
+                font-size: 0.85rem;
+            }
+            
+            .calendar-day span {
+                width: 16px !important;
+                height: 16px !important;
+                font-size: 0.65rem !important;
             }
         }
 
@@ -1346,16 +1357,33 @@
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const todayStr = new Date().toLocaleDateString('sv-SE');
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
                 dayElement.textContent = day;
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
-                if (dateStr === todayStr) dayElement.classList.add('today');
-                if (letters.some(l => l.deliveryDate === dateStr)) {
-                    dayElement.classList.add('has-letter');
+                // 今日の日付をハイライト
+                if (dateStr === todayStr) {
+                    dayElement.classList.add('today');
                 }
+                
+                // 過去の手紙のみ表示（未来の手紙は表示しない）
+                if (dateStr <= todayStr && letters.some(l => l.deliveryDate === dateStr)) {
+                    dayElement.classList.add('has-letter');
+                    // 未開封の手紙がある場合は特別な表示
+                    const unopenedCount = letters.filter(l => l.deliveryDate === dateStr && !l.isOpened).length;
+                    if (unopenedCount > 0) {
+                        dayElement.innerHTML = `${day}<span style="position: absolute; top: 2px; right: 2px; background: #667eea; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center;">${unopenedCount}</span>`;
+                    }
+                }
+                // 未来の日付はクリックできないスタイルに
+                if (dateStr > todayStr) {
+                    dayElement.style.opacity = '0.5';
+                    dayElement.style.cursor = 'default';
+                }
+                
                 dayElement.onclick = () => showLettersForDate(dateStr);
                 grid.appendChild(dayElement);
             }
@@ -1370,14 +1398,20 @@
 
         function showLettersForDate(date) {
             const todayStr = new Date().toLocaleDateString('sv-SE');
-            const dateLetters = letters.filter(l => l.deliveryDate === date);
-            if (dateLetters.length === 0) { showToast('この日の手紙はありません'); return; }
-
-            if(date > todayStr) {
-                 showToast(`この手紙は ${new Date(date).toLocaleDateString('ja-JP')} に届きます`);
-            } else {
-                 openLetter(dateLetters[0].id);
+            
+            // 未来の日付の場合は何もしない
+            if (date > todayStr) {
+                return;
             }
+            
+            const dateLetters = letters.filter(l => l.deliveryDate === date);
+            if (dateLetters.length === 0) {
+                showToast('この日の手紙はありません');
+                return;
+            }
+
+            // 最初の手紙を開く
+            openLetter(dateLetters[0].id);
         }
 
         // データエクスポート/インポート

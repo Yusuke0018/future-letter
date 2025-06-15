@@ -855,7 +855,6 @@
             
             <div class="filter-container">
                 <div class="filter-chip active" data-filter="all" onclick="filterLetters('all')">届いた手紙</div>
-                <div class="filter-chip" data-filter="future" onclick="filterLetters('future')">未来の手紙</div>
                 <div class="filter-chip" data-filter="replies" onclick="filterLetters('replies')">返事</div>
                 <div class="filter-chip" data-filter="someday" onclick="filterLetters('someday')">いつかの自分</div>
                 <div class="filter-chip" data-filter="date" onclick="filterLetters('date')">特定の日付</div>
@@ -1019,7 +1018,6 @@
             showToast('未来への手紙を送信しました！');
             resetForm();
             showSection('letters');
-            filterLetters('future');
         }
 
         // フォームリセット
@@ -1063,17 +1061,15 @@
             const todayStr = new Date().toLocaleDateString('sv-SE');
 
             let lettersToDisplay;
-            if (currentFilter === 'future') {
-                 lettersToDisplay = letters.filter(l => l.deliveryDate && l.deliveryDate > todayStr);
-            } else {
-                const displayableLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
-                if (currentFilter === 'all') {
-                    lettersToDisplay = displayableLetters.filter(l => !l.parentLetterId);
-                } else if (currentFilter === 'replies') {
-                    lettersToDisplay = displayableLetters.filter(l => l.parentLetterId !== null);
-                } else { // someday or date
-                    lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter && !l.parentLetterId);
-                }
+            // 未来の手紙は表示しない（配信日前の手紙を除外）
+            const displayableLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
+            
+            if (currentFilter === 'all') {
+                lettersToDisplay = displayableLetters.filter(l => !l.parentLetterId);
+            } else if (currentFilter === 'replies') {
+                lettersToDisplay = displayableLetters.filter(l => l.parentLetterId !== null);
+            } else { // someday or date
+                lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter && !l.parentLetterId);
             }
             
             grid.style.display = lettersToDisplay.length > 0 ? 'grid' : 'none';
@@ -1083,24 +1079,15 @@
             lettersToDisplay.sort((a,b) => new Date(b.deliveryDate) - new Date(a.deliveryDate));
 
             lettersToDisplay.forEach(letter => {
-                const isFuture = letter.deliveryDate && letter.deliveryDate > todayStr;
                 const isReply = letter.parentLetterId !== null;
-                const shouldShowUnopened = !isFuture && !letter.isOpened;
+                const shouldShowUnopened = !letter.isOpened;
 
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `letter-card ${letter.images?.length > 0 ? 'has-images' : ''}`;
                 
                 let contentHtml = '';
                 
-                if (isFuture) {
-                    cardDiv.classList.add('future-locked');
-                    cardDiv.onclick = () => showToast(`この手紙は ${new Date(letter.deliveryDate).toLocaleDateString('ja-JP')} に届きます`);
-                    contentHtml = `
-                        <h3 style="margin-bottom: 0.5rem;">${escapeHtml(letter.title)}</h3>
-                        <div class="letter-date">配信予定: ${new Date(letter.deliveryDate).toLocaleDateString('ja-JP')}</div>
-                        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; color: #888; font-size: 2.5rem; padding: 1rem 0;">🔒</div>
-                        <div class="letter-category">${getCategoryName(letter.category)}</div>`;
-                } else if (shouldShowUnopened) {
+                if (shouldShowUnopened) {
                     cardDiv.classList.add('unopened');
                     cardDiv.onclick = () => openLetter(letter.id);
                     contentHtml = `

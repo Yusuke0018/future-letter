@@ -1263,23 +1263,28 @@
             const parentLetter = letters.find(l => l.id === parentLetterId);
             if (!parentLetter) return;
 
-            const title = document.getElementById('modal-reply-title').value || `Re: ${parentLetter.title}`;
+            const title = `Re: ${parentLetter.title}`;
             const content = document.getElementById('modal-reply-content').value;
             const category = parentLetter.category;
             let deliveryDate = null;
 
             if (category === 'date') {
-                deliveryDate = document.getElementById('modal-reply-delivery-date').value;
-                if (!deliveryDate) { showToast('配信日を選択してください'); return; }
+                // 日付指定の場合は、翌日以降のランダムな日付を設定
+                const daysToAdd = Math.floor(Math.random() * 30) + 1; // 1〜30日後
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + daysToAdd);
+                deliveryDate = futureDate.toISOString().split('T')[0];
             } else if (category === 'someday') {
+                // いつかの自分の場合は、親と同様にランダムな日付を設定
                 const randomDays = Math.floor(Math.random() * (1095 - 180 + 1)) + 180;
-                const futureDate = new Date(); futureDate.setDate(futureDate.getDate() + randomDays);
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + randomDays);
                 deliveryDate = futureDate.toISOString().split('T')[0];
             }
 
             const replyLetter = {
                 id: Date.now().toString(), title, content, category, deliveryDate,
-                createdAt: new Date().toISOString(), isRead: true, isOpened: true,
+                createdAt: new Date().toISOString(), isRead: false, isOpened: false,
                 images: [], parentLetterId, hasReply: false
             };
             parentLetter.hasReply = true;

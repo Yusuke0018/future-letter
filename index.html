@@ -795,7 +795,7 @@
         <section id="compose-section" class="section">
             <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">未来への手紙を書く</h2>
             
-            <form class="letter-form" onsubmit="saveLetter(event)">
+            <form class="letter-form" id="letter-form" onsubmit="saveLetter(event)">
                 <div id="reply-indicator" class="reply-indicator" style="display: none;">
                     <span>💌</span>
                     <span id="reply-to-text">への返事を書いています</span>
@@ -1119,9 +1119,11 @@
                         </div>`;
                 } else { // Opened Original Letter
                     cardDiv.onclick = () => openLetter(letter.id);
+                    // 返事を書くボタンのデータ属性を設定
+                    cardDiv.dataset.letterId = letter.id;
                     const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
                     contentHtml = `
-                        <div class="letter-actions"><button class="btn btn-reply" onclick="event.stopPropagation(); openLetter('${letter.id}', true)">返事を書く</button></div>
+                        <div class="letter-actions"><button class="btn btn-reply reply-btn" data-letter-id="${letter.id}">返事を書く</button></div>
                         <div class="letter-date">届いた日: ${deliveryDate}</div>
                         <h3 style="margin: 0.5rem 0;">${escapeHtml(letter.title)}</h3>
                         <div class="letter-preview" style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
@@ -1129,6 +1131,15 @@
                 }
                 cardDiv.innerHTML = contentHtml;
                 grid.appendChild(cardDiv);
+            });
+
+            // 返事を書くボタンにイベントリスナーを追加
+            document.querySelectorAll('.reply-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const letterId = e.target.dataset.letterId;
+                    openLetter(letterId, true);
+                });
             });
         }
 
@@ -1161,6 +1172,7 @@
 
             const modal = document.getElementById('letter-modal');
             const modalBody = document.getElementById('modal-body');
+            const modalTitle = document.getElementById('modal-title'); // 修正: modalTitleの定義を追加
             modalTitle.textContent = '手紙の詳細';
             
             const replies = letters.filter(l => l.parentLetterId === letterId);

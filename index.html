@@ -375,6 +375,10 @@
             flex-grow: 1;
         }
 
+        .letter-card.future-locked {
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
         .letter-card.has-images::after {
             content: '📷';
             position: absolute;
@@ -427,6 +431,22 @@
             display: flex;
             gap: 0.5rem;
             z-index: 10;
+        }
+
+        .edit-btn {
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn:hover {
+            background: rgba(102, 126, 234, 1);
+            transform: scale(1.05);
         }
 
         .letter-date {
@@ -850,6 +870,7 @@
             
             <div class="filter-container">
                 <div class="filter-chip active" data-filter="all" onclick="filterLetters('all')">すべて</div>
+                <div class="filter-chip" data-filter="future" onclick="filterLetters('future')">未来の手紙</div>
                 <div class="filter-chip" data-filter="replies" onclick="filterLetters('replies')">返事</div>
                 <div class="filter-chip" data-filter="someday" onclick="filterLetters('someday')">いつかの自分</div>
                 <div class="filter-chip" data-filter="date" onclick="filterLetters('date')">特定の日付</div>
@@ -1044,8 +1065,8 @@
 
         // 今日の手紙をチェック
         function checkTodaysLetters() {
-            const today = new Date().toISOString().split('T')[0];
-            const hasTodaysLetters = letters.some(l => l.deliveryDate && l.deliveryDate <= today && !l.isRead);
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const hasTodaysLetters = letters.some(l => l.deliveryDate && l.deliveryDate <= todayStr && !l.isRead);
             document.getElementById('notification-bar').classList.toggle('show', hasTodaysLetters);
         }
 
@@ -1053,40 +1074,51 @@
         function renderLetters() {
             const grid = document.getElementById('letters-grid');
             const emptyState = document.getElementById('empty-state');
-            const today = new Date();
-            today.setHours(0,0,0,0);
+            const todayStr = new Date().toLocaleDateString('sv-SE');
 
-            const displayableLetters = letters.filter(l => l.deliveryDate && new Date(l.deliveryDate) <= today);
-
-            let filteredLetters;
-            if (currentFilter === 'all') {
-                filteredLetters = displayableLetters;
-            } else if (currentFilter === 'replies') {
-                filteredLetters = displayableLetters.filter(l => l.parentLetterId !== null);
-            } else { // someday or date
-                filteredLetters = displayableLetters.filter(l => l.category === currentFilter);
+            let lettersToDisplay;
+            if (currentFilter === 'future') {
+                 lettersToDisplay = letters.filter(l => l.deliveryDate && l.deliveryDate > todayStr);
+            } else {
+                const displayableLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
+                if (currentFilter === 'all') {
+                    lettersToDisplay = displayableLetters;
+                } else if (currentFilter === 'replies') {
+                    lettersToDisplay = displayableLetters.filter(l => l.parentLetterId !== null);
+                } else { // someday or date
+                    lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter);
+                }
             }
-
-            grid.style.display = filteredLetters.length > 0 ? 'grid' : 'none';
-            emptyState.style.display = filteredLetters.length > 0 ? 'none' : 'block';
+            
+            grid.style.display = lettersToDisplay.length > 0 ? 'grid' : 'none';
+            emptyState.style.display = lettersToDisplay.length > 0 ? 'none' : 'block';
             grid.innerHTML = '';
             
-            filteredLetters.sort((a,b) => new Date(b.deliveryDate) - new Date(a.deliveryDate));
+            lettersToDisplay.sort((a,b) => new Date(b.deliveryDate) - new Date(a.deliveryDate));
 
-            filteredLetters.forEach(letter => {
+            lettersToDisplay.forEach(letter => {
+                const isFuture = letter.deliveryDate && letter.deliveryDate > todayStr;
                 const isReply = letter.parentLetterId !== null;
-                const shouldShowUnopened = !letter.isOpened && !letter.hasReply;
+                const shouldShowUnopened = !isFuture && !letter.isOpened && !letter.hasReply;
 
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `letter-card ${letter.images?.length > 0 ? 'has-images' : ''}`;
-                cardDiv.onclick = () => openLetter(letter.id);
-
+                
                 let contentHtml = '';
                 let overlayHtml = '';
+                let onclickAction = `openLetter('${letter.id}')`;
 
-                if (shouldShowUnopened) {
+                if (isFuture) {
+                    cardDiv.classList.add('future-locked');
+                    onclickAction = `editLetter('${letter.id}')`;
+                    contentHtml = `
+                        <h3 style="margin-bottom: 0.5rem;">${escapeHtml(letter.title)}</h3>
+                        <div class="letter-date">配信予定: ${new Date(letter.deliveryDate).toLocaleDateString('ja-JP')}</div>
+                        <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; color: #888; font-size: 2.5rem; padding: 1rem 0;">🔒</div>
+                        <div class="letter-category">${getCategoryName(letter.category)}</div>`;
+                } else if (shouldShowUnopened) {
                     cardDiv.classList.add('unopened');
-                    overlayHtml = `<div class="unopened-overlay"><div class="unopened-icon">💌</div><div class="unopened-text">クリックして開封</div></div>`;
+                    overlayHtml = `<div class="unopened-overlay" onclick="openLetter('${letter.id}')"><div class="unopened-icon">💌</div><div class="unopened-text">クリックして開封</div></div>`;
                     contentHtml = `<div style="visibility: hidden; height: 120px;"></div>`;
                 } else if (isReply) {
                     const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
@@ -1098,14 +1130,13 @@
                 } else { // Opened Original Letter
                     const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
                     contentHtml = `
+                        <div class="letter-actions"><button class="btn btn-reply" onclick="event.stopPropagation(); openLetter('${letter.id}', true)">返事を書く</button></div>
                         <div class="letter-date">届いた日: ${deliveryDate}</div>
                         <h3 style="margin: 0.5rem 0;">${escapeHtml(letter.title)}</h3>
                         <div class="letter-preview" style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
                         ${letter.hasReply ? '<span class="letter-reply-badge" style="position: absolute; bottom: 1.5rem; left: 1.5rem;">返事あり</span>' : ''}`;
-                    cardDiv.innerHTML += `<div class="letter-actions"><button class="btn btn-reply" onclick="event.stopPropagation(); openLetter('${letter.id}', true)">返事を書く</button></div>`;
                 }
-
-                cardDiv.innerHTML += `<div class="letter-content">${contentHtml}</div>${overlayHtml}`;
+                cardDiv.innerHTML += `<div class="letter-content" onclick="${onclickAction}">${contentHtml}</div>${overlayHtml}`;
                 grid.appendChild(cardDiv);
             });
         }
@@ -1128,6 +1159,13 @@
         function openLetter(letterId, showReplyForm = false) {
             const letter = letters.find(l => l.id === letterId);
             if (!letter) return;
+            
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const isFuture = letter.deliveryDate && letter.deliveryDate > todayStr;
+            if (isFuture) {
+                editLetter(letterId);
+                return;
+            }
 
             if (!letter.isOpened) {
                 letter.isOpened = true;
@@ -1265,6 +1303,61 @@
             updateStats();
         }
 
+        // 手紙の編集モーダルを開く
+        function editLetter(letterId) {
+            const letter = letters.find(l => l.id === letterId);
+            if (!letter) return;
+            
+            const modal = document.getElementById('letter-modal');
+            const modalBody = document.getElementById('modal-body');
+            document.getElementById('modal-title').textContent = '未来の手紙を編集';
+            modalBody.innerHTML = '';
+            
+            let editingImages = letter.images ? [...letter.images] : [];
+            const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            
+            modalBody.innerHTML = `
+                <form onsubmit="updateLetter(event, '${letter.id}')">
+                    <div class="form-group"><label class="form-label">件名</label><input type="text" id="edit-title" class="form-input" value="${escapeHtml(letter.title)}" required></div>
+                    <div class="form-group"><label class="form-label">配信日</label>${letter.category !== 'date' ? `<div class="form-input" style="color: #888;">「いつかの自分」では変更できません</div>` : `<input type="date" id="edit-date" class="form-input" value="${letter.deliveryDate || ''}" min="${minDate}">`}</div>
+                    <div class="form-group"><label class="form-label">内容</label><textarea id="edit-content" class="form-textarea" required>${escapeHtml(letter.content)}</textarea></div>
+                    <div class="form-group">
+                        <label class="form-label">画像</label>
+                        <div class="image-upload-area" onclick="this.querySelector('input').click()">
+                            <input type="file" accept="image/*" multiple style="display: none;" onchange="handleEditImageSelect(event, '${letter.id}')">
+                            ...
+                        </div>
+                        <div class="image-preview-container" id="edit-image-preview-container-${letter.id}"></div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: space-between; margin-top: 1.5rem;">
+                        <button type="button" class="btn" style="background: rgba(255, 59, 48, 0.8);" onclick="deleteLetter('${letter.id}')">削除</button>
+                        <div><button type="button" class="btn" onclick="closeModal()">キャンセル</button><button type="submit" class="btn btn-primary">保存</button></div>
+                    </div>
+                </form>`;
+            updateEditImagePreview(letter.id, editingImages);
+            modal.classList.add('show');
+        }
+
+        function updateLetter(event, letterId) {
+            event.preventDefault();
+            const letter = letters.find(l => l.id === letterId);
+            if (!letter) return;
+            
+            letter.title = document.getElementById('edit-title').value;
+            letter.content = document.getElementById('edit-content').value;
+            // 画像はグローバルではなく、直接更新
+            const previewContainer = document.getElementById(`edit-image-preview-container-${letterId}`);
+            letter.images = Array.from(previewContainer.querySelectorAll('img')).map(img => img.src);
+            if (letter.category === 'date') letter.deliveryDate = document.getElementById('edit-date').value;
+            
+            saveToLocalStorage();
+            showToast('手紙を更新しました');
+            closeModal();
+            renderLetters();
+            updateStats();
+        }
+
         function closeModal() { document.getElementById('letter-modal').classList.remove('show'); }
         function closeModalOnBackground(event) { if (event.target.id === 'letter-modal') closeModal(); }
 
@@ -1297,17 +1390,17 @@
         function showTodaysLetters() {
             showSection('letters');
             filterLetters('all');
-            const today = new Date(); today.setHours(0,0,0,0);
+            const todayStr = new Date().toLocaleDateString('sv-SE');
             const firstUnread = letters
-                .filter(l => l.deliveryDate && new Date(l.deliveryDate) <= today && !l.isRead)
+                .filter(l => l.deliveryDate && l.deliveryDate <= todayStr && !l.isRead)
                 .sort((a,b) => new Date(a.deliveryDate) - new Date(b.deliveryDate))[0];
             if(firstUnread) openLetter(firstUnread.id);
         }
 
         // 統計情報の更新
         function updateStats() {
-            const today = new Date(); today.setHours(0,0,0,0);
-            const deliveredLetters = letters.filter(l => l.deliveryDate && new Date(l.deliveryDate) <= today);
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const deliveredLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
             document.getElementById('total-letters').textContent = deliveredLetters.length;
             document.getElementById('delivered-letters').textContent = deliveredLetters.filter(l => l.isOpened).length;
             document.getElementById('reply-letters').textContent = deliveredLetters.filter(l => l.parentLetterId !== null).length;
@@ -1330,15 +1423,14 @@
             for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const today = new Date(); today.setHours(0,0,0,0);
+            const todayStr = new Date().toLocaleDateString('sv-SE');
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
                 dayElement.textContent = day;
-                const date = new Date(currentYear, currentMonth, day);
-                const dateStr = date.toISOString().split('T')[0];
-
-                if (date.getTime() === today.getTime()) dayElement.classList.add('today');
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                if (dateStr === todayStr) dayElement.classList.add('today');
                 if (letters.some(l => l.deliveryDate === dateStr)) {
                     dayElement.classList.add('has-letter');
                 }
@@ -1355,15 +1447,21 @@
         }
 
         function showLettersForDate(date) {
-            const today = new Date(); today.setHours(0,0,0,0);
-            const dateLetters = letters.filter(l => l.deliveryDate === date && new Date(l.deliveryDate) <= today);
-            if (dateLetters.length === 0) { showToast('この日に届いた手紙はありません'); return; }
-            openLetter(dateLetters[0].id);
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const dateLetters = letters.filter(l => l.deliveryDate === date);
+            if (dateLetters.length === 0) { showToast('この日の手紙はありません'); return; }
+
+            if(date > todayStr) {
+                 showToast(`この手紙は ${new Date(date).toLocaleDateString('ja-JP')} に届きます`);
+                 editLetter(dateLetters[0].id);
+            } else {
+                 openLetter(dateLetters[0].id);
+            }
         }
 
         // データエクスポート/インポート
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: '1.4', letters }, null, 2));
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: '1.5', letters }, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
             downloadAnchorNode.setAttribute("download", `future-letters-${new Date().toISOString().split('T')[0]}.json`);
@@ -1392,7 +1490,8 @@
         }
 
         // 画像処理
-        function processImages(files) {
+        function processImages(files, letterIdForEdit = null, imagesForEdit = null) {
+             const targetArray = letterIdForEdit ? imagesForEdit : tempImages;
             Array.from(files).forEach(file => {
                 if (!file.type.startsWith('image/') || file.size > 2 * 1024 * 1024) {
                     showToast('2MB以下の画像ファイルを選択してください');
@@ -1409,8 +1508,9 @@
                         if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
                         canvas.width = width; canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-                        tempImages.push(canvas.toDataURL('image/jpeg', 0.8));
-                        updateImagePreview();
+                        targetArray.push(canvas.toDataURL('image/jpeg', 0.8));
+                        if(letterIdForEdit) updateEditImagePreview(letterIdForEdit, targetArray);
+                        else updateImagePreview();
                     };
                     img.src = e.target.result;
                 };
@@ -1418,10 +1518,25 @@
             });
         }
         function handleImageSelect(event) { processImages(event.target.files); }
+        function handleEditImageSelect(event, letterId) {
+            const letter = letters.find(l => l.id === letterId);
+            if(!letter) return;
+            const previewContainer = document.getElementById(`edit-image-preview-container-${letterId}`);
+            let currentImages = Array.from(previewContainer.querySelectorAll('img')).map(img => img.src);
+            processImages(event.target.files, letterId, currentImages);
+        }
         function updateImagePreview() {
             document.getElementById('image-preview-container').innerHTML = tempImages.map((img, index) => `<div class="image-preview"><img src="${img}"><button class="image-remove-btn" onclick="removeImage(${index})">×</button></div>`).join('');
         }
+        function updateEditImagePreview(letterId, images) {
+            const container = document.getElementById(`edit-image-preview-container-${letterId}`);
+            container.innerHTML = images.map((img, index) => `<div class="image-preview"><img src="${img}"><button class="image-remove-btn" onclick="removeEditImage(this, '${letterId}')">×</button></div>`).join('');
+        }
         function removeImage(index) { tempImages.splice(index, 1); updateImagePreview(); }
+        function removeEditImage(button, letterId) {
+             button.parentElement.remove();
+        }
+
         function setupDragAndDrop() {
             const uploadArea = document.getElementById('image-upload-area');
             uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
@@ -1449,9 +1564,11 @@
             showSection, selectCategory, saveLetter, resetForm, filterLetters,
             openLetter, deleteLetter, closeModal, closeModalOnBackground,
             changeMonth, showLettersForDate, exportData, importData, showTodaysLetters,
-            handleImageSelect, removeImage, openImageModal, closeImageModal, 
-            showReplyFormInModal, hideReplyFormInModal, saveReplyFromModal
+            handleImageSelect, handleEditImageSelect, removeImage, openImageModal, closeImageModal, 
+            showReplyFormInModal, hideReplyFormInModal, saveReplyFromModal, editLetter, updateLetter,
         });
     </script>
 </body>
+</html>
+
 </html>

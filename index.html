@@ -135,33 +135,6 @@
             padding: 0 2rem;
         }
 
-        /* ビュー切り替えタブ */
-        .view-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            justify-content: center;
-        }
-
-        .tab {
-            padding: 0.75rem 2rem;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .tab.active {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: rgba(102, 126, 234, 0.5);
-        }
-
-        .tab:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
         /* セクション */
         .section {
             display: none;
@@ -388,6 +361,8 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .letter-card:hover {
@@ -395,20 +370,11 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             background: rgba(255, 255, 255, 0.08);
         }
-
-        /* 変更: .futureクラスはJS側で付与されなくなりますが、スタイルは念のため残します */
-        .letter-card.future {
-            border-color: rgba(102, 126, 234, 0.3);
-            background: rgba(102, 126, 234, 0.05);
+        
+        .letter-content {
+            flex-grow: 1;
         }
 
-        .letter-card.future::before {
-            content: '✉️';
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 1.2rem;
-        }
 
         .letter-card.has-images::after {
             content: '📷';
@@ -496,17 +462,6 @@
             transform: scale(1.05);
         }
 
-        /* 編集モーダル */
-        .edit-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .edit-form .form-group {
-            margin-bottom: 0;
-        }
-
         .letter-date {
             font-size: 0.9rem;
             color: #888;
@@ -569,6 +524,12 @@
             animation: fadeIn 0.3s ease-out;
             max-height: 90vh;
             overflow-y: auto;
+        }
+        
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .modal-header {
@@ -863,7 +824,6 @@
             <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">未来への手紙を書く</h2>
             
             <form class="letter-form" onsubmit="saveLetter(event)">
-                <!-- 返事の場合の表示 -->
                 <div id="reply-indicator" class="reply-indicator" style="display: none;">
                     <span>💌</span>
                     <span id="reply-to-text">への返事を書いています</span>
@@ -921,7 +881,6 @@
         <section id="letters-section" class="section">
             <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">手紙の一覧</h2>
             
-            <!-- 変更: フィルター項目を修正 -->
             <div class="filter-container">
                 <div class="filter-chip active" data-filter="all" onclick="filterLetters('all')">すべて</div>
                 <div class="filter-chip" data-filter="past" onclick="filterLetters('past')">届いた手紙</div>
@@ -930,7 +889,6 @@
                 <div class="filter-chip" data-filter="replies" onclick="filterLetters('replies')">返事</div>
             </div>
 
-            <!-- 変更: 統計情報項目を修正 -->
             <div class="stats-container">
                 <div class="stat-card">
                     <div class="stat-number" id="total-letters">0</div>
@@ -946,12 +904,8 @@
                 </div>
             </div>
 
-            <!-- 手紙グリッド -->
-            <div id="letters-grid" class="letters-grid">
-                <!-- 動的に生成 -->
-            </div>
+            <div id="letters-grid" class="letters-grid"></div>
 
-            <!-- 空状態 -->
             <div id="empty-state" class="empty-state" style="display: none;">
                 <div class="empty-state-icon">📭</div>
                 <h3>まだ手紙がありません</h3>
@@ -970,9 +924,7 @@
                     <h3 id="calendar-month"></h3>
                     <button class="btn" onclick="changeMonth(1)">→</button>
                 </div>
-                <div class="calendar-grid" id="calendar-grid">
-                    <!-- 動的に生成 -->
-                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
             </div>
         </section>
 
@@ -999,9 +951,7 @@
                 <h3 id="modal-title">手紙の詳細</h3>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
-            <div id="modal-body">
-                <!-- 動的に生成 -->
-            </div>
+            <div id="modal-body" class="modal-body"></div>
         </div>
     </div>
 
@@ -1021,9 +971,9 @@
         let currentDate = new Date();
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
-        let tempImages = []; // 一時的な画像データ
-        let editingImages = []; // 編集中の画像データ
-        let replyToLetterId = null; // 返事を書く対象の手紙ID
+        let tempImages = [];
+        let editingImages = [];
+        let replyToLetterId = null;
 
         // HTMLエスケープ関数
         function escapeHtml(text) {
@@ -1038,15 +988,10 @@
             checkTodaysLetters();
             updateStats();
             renderCalendar();
-            // 初期表示時に手紙一覧を更新
             if (document.getElementById('letters-section').classList.contains('active')) {
                 renderLetters();
             }
-            
-            // ドラッグ&ドロップイベントの設定
             setupDragAndDrop();
-            
-            // ペーストイベントの設定
             document.addEventListener('paste', handlePaste);
         });
 
@@ -1055,25 +1000,16 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(`${section}-section`).classList.add('active');
             
-            if (section === 'letters') {
-                renderLetters();
-            } else if (section === 'calendar') {
-                renderCalendar();
-            }
+            if (section === 'letters') renderLetters();
+            else if (section === 'calendar') renderCalendar();
         }
 
         // カテゴリー選択
         function selectCategory(category) {
             selectedCategory = category;
-            document.querySelectorAll('.category-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
+            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
             document.querySelector(`[data-category="${category}"]`).classList.add('selected');
-            
-            // 日付選択を表示/非表示
             document.getElementById('date-selector').style.display = category === 'date' ? 'block' : 'none';
-            
-            // 日付の最小値を明日に設定
             if (category === 'date') {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
@@ -1084,7 +1020,6 @@
         // 手紙の保存
         function saveLetter(event) {
             event.preventDefault();
-            
             if (!selectedCategory && !replyToLetterId) {
                 showToast('カテゴリーを選択してください');
                 return;
@@ -1093,67 +1028,37 @@
             const title = document.getElementById('letter-title').value || '無題の手紙';
             const content = document.getElementById('letter-content').value;
             let deliveryDate = null;
-            
-            // 返事の場合は元の手紙と同じカテゴリーを使用
             let category = selectedCategory;
+
             if (replyToLetterId) {
                 const parentLetter = letters.find(l => l.id === replyToLetterId);
                 category = parentLetter.category;
-                
-                // 返事の配信日も設定
-                if (category === 'date') {
-                    deliveryDate = document.getElementById('delivery-date').value;
-                    if (!deliveryDate) {
-                        showToast('配信日を選択してください');
-                        return;
-                    }
-                } else if (category === 'someday') {
-                    // ランダムな未来の日付を生成
-                    const minDays = 180;
-                    const maxDays = 365 * 3;
-                    const randomDays = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
-                    const futureDate = new Date();
-                    futureDate.setDate(futureDate.getDate() + randomDays);
-                    deliveryDate = futureDate.toISOString().split('T')[0];
+            }
+
+            if (category === 'date') {
+                deliveryDate = document.getElementById('delivery-date').value;
+                if (!deliveryDate) {
+                    showToast('配信日を選択してください');
+                    return;
                 }
-            } else {
-                if (selectedCategory === 'date') {
-                    deliveryDate = document.getElementById('delivery-date').value;
-                    if (!deliveryDate) {
-                        showToast('配信日を選択してください');
-                        return;
-                    }
-                } else if (selectedCategory === 'someday') {
-                    // ランダムな未来の日付を生成（6ヶ月〜3年後）
-                    const minDays = 180;
-                    const maxDays = 365 * 3;
-                    const randomDays = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
-                    const futureDate = new Date();
-                    futureDate.setDate(futureDate.getDate() + randomDays);
-                    deliveryDate = futureDate.toISOString().split('T')[0];
-                }
+            } else if (category === 'someday') {
+                const minDays = 180;
+                const maxDays = 365 * 3;
+                const randomDays = Math.floor(Math.random() * (maxDays - minDays + 1)) + minDays;
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + randomDays);
+                deliveryDate = futureDate.toISOString().split('T')[0];
             }
             
             const letter = {
-                id: Date.now().toString(),
-                title,
-                content,
-                category,
-                deliveryDate,
-                createdAt: new Date().toISOString(),
-                isRead: false,
-                isOpened: false,
-                images: [...tempImages], // 画像データをコピー
-                parentLetterId: replyToLetterId, // 返事の場合、元の手紙のID
-                hasReply: false // 返事があるかどうか
+                id: Date.now().toString(), title, content, category, deliveryDate,
+                createdAt: new Date().toISOString(), isRead: false, isOpened: false,
+                images: [...tempImages], parentLetterId: replyToLetterId, hasReply: false
             };
             
-            // 元の手紙に返事フラグを立てる
             if (replyToLetterId) {
                 const parentLetter = letters.find(l => l.id === replyToLetterId);
-                if (parentLetter) {
-                    parentLetter.hasReply = true;
-                }
+                if (parentLetter) parentLetter.hasReply = true;
             }
             
             letters.push(letter);
@@ -1165,139 +1070,98 @@
 
         // フォームリセット
         function resetForm() {
-            document.getElementById('letter-title').value = '';
-            document.getElementById('letter-content').value = '';
-            document.getElementById('delivery-date').value = '';
+            document.getElementById('letter-form').reset();
             selectedCategory = null;
-            document.querySelectorAll('.category-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
+            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
             document.getElementById('date-selector').style.display = 'none';
-            
-            // 画像もクリア
             tempImages = [];
             document.getElementById('image-preview-container').innerHTML = '';
-            
-            // 返事関連もリセット
             replyToLetterId = null;
             document.getElementById('reply-indicator').style.display = 'none';
             document.getElementById('category-selector-group').style.display = 'block';
         }
 
-        // LocalStorageへの保存
+        // LocalStorageへの保存/読込
         function saveToLocalStorage() {
             localStorage.setItem('futureLetters', JSON.stringify(letters));
         }
 
-        // LocalStorageからの読み込み
         function loadLetters() {
             const saved = localStorage.getItem('futureLetters');
             if (saved) {
-                letters = JSON.parse(saved);
-                // 既存データに新しいプロパティを追加
-                letters = letters.map(letter => ({
-                    ...letter,
-                    isOpened: letter.isOpened !== undefined ? letter.isOpened : false,
+                letters = JSON.parse(saved).map(letter => ({
+                    ...letter, isOpened: letter.isOpened ?? false,
                     parentLetterId: letter.parentLetterId || null,
-                    hasReply: letter.hasReply !== undefined ? letter.hasReply : false
+                    hasReply: letter.hasReply ?? false
                 }));
-                saveToLocalStorage();
             }
         }
 
         // 今日の手紙をチェック
         function checkTodaysLetters() {
             const today = new Date().toISOString().split('T')[0];
-            const todaysLetters = letters.filter(letter => {
-                if (letter.deliveryDate && letter.deliveryDate <= today) {
-                    return true;
-                }
-                return false;
-            });
-            
-            if (todaysLetters.length > 0) {
-                document.getElementById('notification-bar').classList.add('show');
-            }
+            const hasTodaysLetters = letters.some(l => l.deliveryDate && l.deliveryDate <= today && !l.isRead);
+            document.getElementById('notification-bar').classList.toggle('show', hasTodaysLetters);
         }
 
-        // 変更: 手紙の表示ロジックを修正
+        // 手紙の表示
         function renderLetters() {
             const grid = document.getElementById('letters-grid');
             const emptyState = document.getElementById('empty-state');
             const today = new Date().toISOString().split('T')[0];
 
-            // 配信日が未来の手紙を最初から除外する
-            const displayableLetters = letters.filter(l => {
-                if (l.deliveryDate && l.deliveryDate > today) {
-                    return false;
-                }
-                return true;
-            });
+            const displayableLetters = letters.filter(l => !l.deliveryDate || l.deliveryDate <= today);
 
             let filteredLetters = displayableLetters;
-            
-            // フィルタリング
-            if (currentFilter === 'past') {
-                // 'past' は配信日が確定している届いた手紙
-                filteredLetters = displayableLetters.filter(l => l.deliveryDate);
-            } else if (currentFilter === 'today') {
-                filteredLetters = displayableLetters.filter(l => l.deliveryDate === today);
-            } else if (currentFilter === 'replies') {
-                filteredLetters = displayableLetters.filter(l => l.parentLetterId !== null);
-            } else if (currentFilter !== 'all') { // 'someday' or 'date'
-                filteredLetters = displayableLetters.filter(l => l.category === currentFilter);
-            }
-            
-            if (filteredLetters.length === 0) {
-                grid.style.display = 'none';
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            grid.style.display = 'grid';
-            emptyState.style.display = 'none';
-            
+            if (currentFilter === 'past') filteredLetters = displayableLetters.filter(l => l.deliveryDate);
+            else if (currentFilter === 'today') filteredLetters = displayableLetters.filter(l => l.deliveryDate === today);
+            else if (currentFilter === 'replies') filteredLetters = displayableLetters.filter(l => l.parentLetterId !== null);
+            else if (currentFilter !== 'all') filteredLetters = displayableLetters.filter(l => l.category === currentFilter);
+
+            grid.style.display = filteredLetters.length > 0 ? 'grid' : 'none';
+            emptyState.style.display = filteredLetters.length > 0 ? 'none' : 'block';
             grid.innerHTML = '';
-            
+
             filteredLetters.forEach(letter => {
                 const isPast = letter.deliveryDate && letter.deliveryDate <= today;
                 const createdDate = new Date(letter.createdAt).toLocaleDateString('ja-JP');
                 const deliveryDate = letter.deliveryDate ? new Date(letter.deliveryDate).toLocaleDateString('ja-JP') : '';
+                const shouldShowUnopened = isPast && !letter.isOpened && !letter.hasReply;
                 
                 const cardDiv = document.createElement('div');
-                cardDiv.className = `letter-card ${letter.images && letter.images.length > 0 ? 'has-images' : ''}`;
+                cardDiv.className = `letter-card ${letter.images?.length > 0 ? 'has-images' : ''} ${shouldShowUnopened ? 'unopened' : ''}`;
                 
-                const shouldShowUnopened = isPast && !letter.isOpened && !letter.hasReply;
-                if (shouldShowUnopened) {
-                    cardDiv.className += ' unopened';
+                const isOriginalDeliveredLetter = isPast && !letter.parentLetterId && !shouldShowUnopened;
+
+                let contentHtml;
+                if (isOriginalDeliveredLetter) {
+                    contentHtml = `
+                        <div class="letter-date">届いた日: ${deliveryDate}</div>
+                        <div class="letter-preview" style="margin-top: 0.5rem; -webkit-line-clamp: 5;">${escapeHtml(letter.content)}</div>
+                    `;
+                } else {
+                    const replyBadge = letter.hasReply && !shouldShowUnopened ? '<span class="letter-reply-badge">返事あり</span>' : '';
+                    const isReply = letter.parentLetterId && !shouldShowUnopened ? '<span class="letter-reply-badge">返事</span>' : '';
+                    const displayTitle = shouldShowUnopened ? '？？？' : escapeHtml(letter.title);
+                    contentHtml = `
+                        <div class="letter-date">作成日: ${createdDate}</div>
+                        ${deliveryDate ? `<div class="letter-date">配信日: ${shouldShowUnopened ? '???' : deliveryDate}</div>` : ''}
+                        <h3 style="margin: 1rem 0;">${displayTitle}${replyBadge}${isReply}</h3>
+                        <div class="letter-preview">${escapeHtml(letter.content)}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                            <div class="letter-category">${getCategoryName(letter.category)}</div>
+                            ${letter.images?.length > 0 && !shouldShowUnopened ? `<span style="color: #667eea; font-size: 0.9rem;">📷 ${letter.images.length}枚</span>` : ''}
+                        </div>
+                    `;
                 }
-                
-                const displayDeliveryDate = deliveryDate;
-                
-                const replyBadge = letter.hasReply && !shouldShowUnopened ? '<span class="letter-reply-badge">返事あり</span>' : '';
-                const isReply = letter.parentLetterId && !shouldShowUnopened ? '<span class="letter-reply-badge">返事</span>' : '';
-                
-                const displayTitle = shouldShowUnopened ? '？？？' : escapeHtml(letter.title);
-                const previewContent = shouldShowUnopened ? 
-                    '<div style="color: #888; font-style: italic;">--- 未開封の手紙 ---</div>' : 
-                    escapeHtml(letter.content);
-                
-                const actualDeliveryDate = shouldShowUnopened ? '？？？' : displayDeliveryDate;
                 
                 cardDiv.innerHTML = `
                     <div class="letter-actions" style="${shouldShowUnopened ? 'visibility: hidden;' : ''}">
-                        <button class="edit-btn" data-letter-id="${letter.id}">編集</button>
-                        ${isPast && !letter.parentLetterId && !shouldShowUnopened ? `<button class="btn btn-reply" onclick="writeReply('${letter.id}')">返事を書く</button>` : ''}
+                        <button class="edit-btn" onclick="event.stopPropagation(); editLetter(event, '${letter.id}')">編集</button>
+                        ${isPast && !letter.parentLetterId && !shouldShowUnopened ? `<button class="btn btn-reply" onclick="event.stopPropagation(); openLetter('${letter.id}', true)">返事を書く</button>` : ''}
                     </div>
-                    <div class="letter-content" data-letter-id="${letter.id}">
-                        <div class="letter-date">作成日: ${createdDate}</div>
-                        ${deliveryDate ? `<div class="letter-date">配信日: ${actualDeliveryDate}</div>` : ''}
-                        <h3 style="margin: 1rem 0;">${displayTitle}${replyBadge}${isReply}</h3>
-                        <div class="letter-preview">${previewContent}</div>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="letter-category">${getCategoryName(letter.category)}</div>
-                            ${letter.images && letter.images.length > 0 && !shouldShowUnopened ? `<span style="color: #667eea; font-size: 0.9rem;">📷 ${letter.images.length}枚</span>` : ''}
-                        </div>
+                    <div class="letter-content" onclick="openLetter('${letter.id}')">
+                        ${contentHtml}
                     </div>
                     ${shouldShowUnopened ? `
                         <div class="unopened-overlay" onclick="openLetter('${letter.id}')">
@@ -1306,57 +1170,37 @@
                         </div>
                     ` : ''}
                 `;
-                
-                const editBtn = cardDiv.querySelector('.edit-btn');
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    editLetter(e, letter.id);
-                });
-                
-                if (!shouldShowUnopened) {
-                    const contentDiv = cardDiv.querySelector('.letter-content');
-                    contentDiv.addEventListener('click', () => {
-                        openLetter(letter.id);
-                    });
-                }
-                
                 grid.appendChild(cardDiv);
             });
         }
 
-
-        // カテゴリー名の取得
+        // カテゴリー名取得
         function getCategoryName(category) {
-            const names = {
-                'someday': 'いつかの自分',
-                'date': '特定の日付'
-            };
-            return names[category] || category;
+            return { 'someday': 'いつかの自分', 'date': '特定の日付' }[category] || category;
         }
 
         // フィルター適用
         function filterLetters(filter) {
             currentFilter = filter;
             document.querySelectorAll('.filter-chip').forEach(chip => {
-                chip.classList.remove('active');
-                if (chip.getAttribute('data-filter') === filter) {
-                    chip.classList.add('active');
-                }
+                chip.classList.toggle('active', chip.dataset.filter === filter);
             });
             renderLetters();
         }
 
         // 手紙を開く
-        function openLetter(letterId) {
+        function openLetter(letterId, showReplyForm = false) {
             const letter = letters.find(l => l.id === letterId);
             if (!letter) return;
-            
-            // 開封フラグを立てる
-            letter.isOpened = true;
-            letter.isRead = true;
-            saveToLocalStorage();
-            updateStats(); // 統計情報を更新
-            
+
+            if (!letter.isOpened) {
+                letter.isOpened = true;
+                letter.isRead = true;
+                saveToLocalStorage();
+                updateStats();
+                checkTodaysLetters();
+            }
+
             const modal = document.getElementById('letter-modal');
             const modalBody = document.getElementById('modal-body');
             const modalTitle = document.getElementById('modal-title');
@@ -1364,52 +1208,39 @@
             modalTitle.textContent = '手紙の詳細';
             
             const replies = letters.filter(l => l.parentLetterId === letterId);
-            const hasReplies = replies.length > 0;
+            const parentLetter = letter.parentLetterId ? letters.find(l => l.id === letter.parentLetterId) : null;
             
-            let parentLetter = null;
-            if (letter.parentLetterId) {
-                parentLetter = letters.find(l => l.id === letter.parentLetterId);
-            }
-            
-            modalBody.innerHTML = '';
-            
+            modalBody.innerHTML = ''; // Clear previous content
+
             const threadContainer = document.createElement('div');
             threadContainer.className = 'thread-container';
-            
-            if (parentLetter) {
-                threadContainer.appendChild(createLetterElement(parentLetter, false));
-                const connector = document.createElement('div');
-                connector.className = 'thread-connector';
-                threadContainer.appendChild(connector);
-            }
-            
+            if (parentLetter) threadContainer.appendChild(createLetterElement(parentLetter, false));
             threadContainer.appendChild(createLetterElement(letter, !parentLetter));
-            
-            if (hasReplies) {
-                replies.forEach(reply => {
-                    const connector = document.createElement('div');
-                    connector.className = 'thread-connector';
-                    threadContainer.appendChild(connector);
-                    threadContainer.appendChild(createLetterElement(reply, false, true));
-                });
-            }
-            
+            replies.forEach(reply => threadContainer.appendChild(createLetterElement(reply, false, true)));
             modalBody.appendChild(threadContainer);
-            
+
             const today = new Date().toISOString().split('T')[0];
             const isPast = letter.deliveryDate && letter.deliveryDate <= today;
             
             const buttonsDiv = document.createElement('div');
-            buttonsDiv.style.cssText = 'margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;';
+            buttonsDiv.id = 'modal-buttons';
+            buttonsDiv.style.cssText = 'margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;';
             buttonsDiv.innerHTML = `
-                ${isPast && !letter.parentLetterId ? `<button class="btn btn-reply" onclick="writeReply('${letter.id}')">返事を書く</button>` : ''}
+                ${isPast && !letter.parentLetterId ? `<button class="btn btn-reply" onclick="showReplyFormInModal('${letter.id}')">返事を書く</button>` : ''}
                 <button class="btn" onclick="editLetter(event, '${letter.id}')">編集</button>
                 <button class="btn btn-primary" onclick="closeModal()">閉じる</button>
             `;
             modalBody.appendChild(buttonsDiv);
-            
+
+            const replyFormContainer = document.createElement('div');
+            replyFormContainer.id = 'modal-reply-form-container';
+            modalBody.appendChild(replyFormContainer);
+
             modal.classList.add('show');
             
+            if (showReplyForm) {
+                showReplyFormInModal(letterId);
+            }
             if (document.getElementById('letters-section').classList.contains('active')) {
                 renderLetters();
             }
@@ -1417,14 +1248,10 @@
 
         // 手紙要素の作成
         function createLetterElement(letter, isMain = true, isReply = false) {
-            const createdDate = new Date(letter.createdAt).toLocaleDateString('ja-JP');
-            const today = new Date().toISOString().split('T')[0];
-            const isFuture = letter.deliveryDate && letter.deliveryDate > today;
-            // 詳細表示では未来の手紙でも配信日を表示
-            const displayDeliveryDate = letter.deliveryDate ? new Date(letter.deliveryDate).toLocaleDateString('ja-JP') : '';
-            
             const letterDiv = document.createElement('div');
             letterDiv.className = `thread-letter ${isReply ? 'reply' : ''}`;
+            const createdDate = new Date(letter.createdAt).toLocaleDateString('ja-JP');
+            const deliveryDate = letter.deliveryDate ? new Date(letter.deliveryDate).toLocaleDateString('ja-JP') : '';
             
             let imagesHtml = '';
             if (letter.images && letter.images.length > 0) {
@@ -1432,52 +1259,107 @@
                     <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                         <p style="color: #888; margin-bottom: 1rem;">📷 添付画像（${letter.images.length}枚）</p>
                         <div class="letter-images">
-                            ${letter.images.map((img, index) => `
-                                <img src="${img}" class="letter-image" onclick="event.stopPropagation(); openImageModal(this.src)" alt="手紙の画像${index + 1}" style="max-width: 200px; height: auto; cursor: pointer;">
-                            `).join('')}
+                            ${letter.images.map((img, index) => `<img src="${img}" class="letter-image" onclick="event.stopPropagation(); openImageModal(this.src)" alt="手紙の画像${index + 1}" style="max-width: 200px; height: auto;">`).join('')}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
             
             letterDiv.innerHTML = `
                 <div style="margin-bottom: 1rem;">
                     <small style="color: #888;">作成日: ${createdDate}</small>
-                    ${displayDeliveryDate ? `<br><small style="color: #888;">配信予定日: ${displayDeliveryDate}</small>` : ''}
+                    ${deliveryDate ? `<br><small style="color: #888;">配信予定日: ${deliveryDate}</small>` : ''}
                     ${letter.parentLetterId ? '<br><small style="color: #48bb78;">返事</small>' : ''}
                 </div>
                 <h3 style="margin-bottom: 1rem;">${escapeHtml(letter.title)}</h3>
                 <div style="white-space: pre-wrap; line-height: 1.8;">${escapeHtml(letter.content)}</div>
                 ${imagesHtml}
             `;
-            
             return letterDiv;
         }
-
-        // 返事を書く
-        function writeReply(letterId) {
+        
+        // モーダル内で返信フォーム表示
+        function showReplyFormInModal(letterId) {
             const parentLetter = letters.find(l => l.id === letterId);
             if (!parentLetter) return;
-            
-            closeModal();
-            showSection('compose');
-            
-            replyToLetterId = letterId;
-            document.getElementById('reply-indicator').style.display = 'block';
-            document.getElementById('reply-to-text').textContent = `「${parentLetter.title}」への返事を書いています`;
-            document.getElementById('category-selector-group').style.display = 'none';
-            
+
+            const container = document.getElementById('modal-reply-form-container');
+            document.getElementById('modal-buttons').style.display = 'none';
+
+            let deliveryDateHtml = '';
             if (parentLetter.category === 'date') {
-                document.getElementById('date-selector').style.display = 'block';
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                document.getElementById('delivery-date').min = tomorrow.toISOString().split('T')[0];
-            } else {
-                document.getElementById('date-selector').style.display = 'none';
+                const minDate = tomorrow.toISOString().split('T')[0];
+                deliveryDateHtml = `
+                    <div class="form-group">
+                        <label class="form-label">配信日を選択</label>
+                        <input type="date" id="modal-reply-delivery-date" class="form-input" min="${minDate}">
+                    </div>`;
             }
-            
-            document.getElementById('letter-title').placeholder = `Re: ${parentLetter.title}`;
+
+            container.innerHTML = `
+                <div class="letter-form" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; background: transparent; backdrop-filter: none; box-shadow: none; padding: 2rem 0 0 0;">
+                    <h4 style="margin-bottom: 1.5rem;">返事を書く</h4>
+                    <form onsubmit="saveReplyFromModal(event, '${letterId}')">
+                        ${deliveryDateHtml}
+                        <div class="form-group">
+                            <label class="form-label">件名（任意）</label>
+                            <input type="text" id="modal-reply-title" class="form-input" placeholder="Re: ${escapeHtml(parentLetter.title)}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">返事の内容</label>
+                            <textarea id="modal-reply-content" class="form-textarea" required></textarea>
+                        </div>
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn" onclick="hideReplyFormInModal()">キャンセル</button>
+                            <button type="submit" class="btn btn-primary">返信を送信</button>
+                        </div>
+                    </form>
+                </div>`;
+            container.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
+        
+        // モーダル内の返信フォームを非表示
+        function hideReplyFormInModal() {
+            document.getElementById('modal-reply-form-container').innerHTML = '';
+            document.getElementById('modal-buttons').style.display = 'flex';
+        }
+
+        // モーダルからの返信を保存
+        function saveReplyFromModal(event, parentLetterId) {
+            event.preventDefault();
+            const parentLetter = letters.find(l => l.id === parentLetterId);
+            if (!parentLetter) return;
+
+            const title = document.getElementById('modal-reply-title').value || `Re: ${parentLetter.title}`;
+            const content = document.getElementById('modal-reply-content').value;
+            const category = parentLetter.category;
+            let deliveryDate = null;
+
+            if (category === 'date') {
+                deliveryDate = document.getElementById('modal-reply-delivery-date').value;
+                if (!deliveryDate) { showToast('配信日を選択してください'); return; }
+            } else if (category === 'someday') {
+                const randomDays = Math.floor(Math.random() * (1095 - 180 + 1)) + 180;
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + randomDays);
+                deliveryDate = futureDate.toISOString().split('T')[0];
+            }
+
+            const replyLetter = {
+                id: Date.now().toString(), title, content, category, deliveryDate,
+                createdAt: new Date().toISOString(), isRead: false, isOpened: false,
+                images: [], parentLetterId, hasReply: false
+            };
+            parentLetter.hasReply = true;
+            letters.push(replyLetter);
+            saveToLocalStorage();
+            showToast('返事を送信しました！');
+            closeModal();
+            renderLetters();
+            updateStats();
+        }
+
 
         // モーダルを閉じる
         function closeModal() {
@@ -1487,28 +1369,21 @@
 
         // 背景クリックでモーダルを閉じる
         function closeModalOnBackground(event) {
-            if (event.target.classList.contains('modal')) {
-                closeModal();
-            }
+            if (event.target.id === 'letter-modal') closeModal();
         }
 
         // 手紙の削除
         function deleteLetter(letterId) {
-            if (confirm('この手紙を削除してもよろしいですか？関連する返事もすべて削除されます。')) {
-                const replies = letters.filter(l => l.parentLetterId === letterId);
-                const deleteIds = [letterId, ...replies.map(r => r.id)];
-                
+            if (confirm('この手紙と関連する返事をすべて削除しますか？')) {
+                const deleteIds = [letterId, ...letters.filter(l => l.parentLetterId === letterId).map(r => r.id)];
                 const letterToDelete = letters.find(l => l.id === letterId);
-                const parentId = letterToDelete ? letterToDelete.parentLetterId : null;
+                const parentId = letterToDelete?.parentLetterId;
 
                 letters = letters.filter(l => !deleteIds.includes(l.id));
                 
                 if (parentId) {
                     const parentLetter = letters.find(l => l.id === parentId);
-                    if (parentLetter) {
-                        const hasOtherReplies = letters.some(l => l.parentLetterId === parentLetter.id);
-                        parentLetter.hasReply = hasOtherReplies;
-                    }
+                    if (parentLetter) parentLetter.hasReply = letters.some(l => l.parentLetterId === parentId);
                 }
                 
                 saveToLocalStorage();
@@ -1523,98 +1398,51 @@
         // 手紙の編集
         function editLetter(event, letterId) {
             if (event) event.stopPropagation();
-            
             const letter = letters.find(l => l.id === letterId);
             if (!letter) return;
-            
-            const today = new Date().toISOString().split('T')[0];
-            if (letter.deliveryDate && letter.deliveryDate > today) {
-                showToast('未来の手紙は配信日まで編集できません。');
-                return;
-            }
-            if (!letter.isOpened && !letter.hasReply && letter.deliveryDate && letter.deliveryDate <= today) {
-                showToast('未開封の手紙は編集できません。まず開封してください。');
-                return;
-            }
-            
-            const modal = document.getElementById('letter-modal');
+
+            // 編集UIをモーダル内に表示（既存のモーダルを再利用）
+            openLetter(letterId); // まず詳細を表示
             const modalBody = document.getElementById('modal-body');
-            const modalTitle = document.getElementById('modal-title');
+            modalBody.innerHTML = ''; // 詳細をクリア
             
-            modalTitle.textContent = '手紙を編集';
+            document.getElementById('modal-title').textContent = '手紙を編集';
             editingImages = letter.images ? [...letter.images] : [];
-            
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const minDate = tomorrow.toISOString().split('T')[0];
             
-            const isRandomDelivery = letter.category === 'someday';
-            const deliveryDateInput = isRandomDelivery ? 
-                `<div class="form-input" style="background: rgba(255, 255, 255, 0.03); color: #888;">配信日は秘密です 🎁</div>` :
-                `<input type="date" id="edit-date" class="form-input" value="${letter.deliveryDate || ''}" min="${minDate}">`;
-            
             modalBody.innerHTML = `
-                <form class="edit-form" onsubmit="updateLetter(event, '${letter.id}')">
-                    <div class="form-group">
-                        <label class="form-label">件名</label>
-                        <input type="text" id="edit-title" class="form-input" value="${escapeHtml(letter.title)}" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">配信日</label>
-                        ${deliveryDateInput}
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">内容</label>
-                        <textarea id="edit-content" class="form-textarea" required>${escapeHtml(letter.content)}</textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">画像</label>
-                        <div class="image-upload-area" id="edit-image-upload-area" onclick="document.getElementById('edit-image-input').click()">
-                            <input type="file" id="edit-image-input" accept="image/*" multiple style="display: none;" onchange="handleEditImageSelect(event)">
-                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
-                            <p>クリックして画像を追加</p>
-                        </div>
-                        <div class="image-preview-container" id="edit-image-preview-container"></div>
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; justify-content: space-between;">
+                <form onsubmit="updateLetter(event, '${letter.id}')">
+                    <div class="form-group"><label class="form-label">件名</label><input type="text" id="edit-title" class="form-input" value="${escapeHtml(letter.title)}" required></div>
+                    <div class="form-group"><label class="form-label">配信日</label>${letter.category !== 'date' ? `<div class="form-input" style="color: #888;">変更できません</div>` : `<input type="date" id="edit-date" class="form-input" value="${letter.deliveryDate || ''}" min="${minDate}">`}</div>
+                    <div class="form-group"><label class="form-label">内容</label><textarea id="edit-content" class="form-textarea" required>${escapeHtml(letter.content)}</textarea></div>
+                    <div class="form-group"><label class="form-label">画像</label><div class="image-upload-area" onclick="document.getElementById('edit-image-input').click()"><input type="file" id="edit-image-input" accept="image/*" multiple style="display: none;" onchange="handleEditImageSelect(event)">...</div><div class="image-preview-container" id="edit-image-preview-container"></div></div>
+                    <div style="display: flex; gap: 1rem; justify-content: space-between; margin-top: 1.5rem;">
                         <button type="button" class="btn" style="background: rgba(255, 59, 48, 0.8);" onclick="deleteLetter('${letter.id}')">削除</button>
-                        <div style="display: flex; gap: 1rem;">
-                            <button type="button" class="btn" onclick="closeModal()">キャンセル</button>
-                            <button type="submit" class="btn btn-primary">保存</button>
-                        </div>
+                        <div><button type="button" class="btn" onclick="closeModal()">キャンセル</button><button type="submit" class="btn btn-primary">保存</button></div>
                     </div>
                 </form>
             `;
-            
-            if (editingImages.length > 0) updateEditImagePreview();
-            modal.classList.add('show');
+            updateEditImagePreview();
         }
 
         // 手紙の更新
         function updateLetter(event, letterId) {
             event.preventDefault();
-            
             const letter = letters.find(l => l.id === letterId);
             if (!letter) return;
             
             letter.title = document.getElementById('edit-title').value;
             letter.content = document.getElementById('edit-content').value;
             letter.images = [...editingImages];
-            
-            if (letter.category === 'date') {
-                letter.deliveryDate = document.getElementById('edit-date').value;
-            }
+            if (letter.category === 'date') letter.deliveryDate = document.getElementById('edit-date').value;
             
             saveToLocalStorage();
             showToast('手紙を更新しました');
             closeModal();
             renderLetters();
             updateStats();
-            checkTodaysLetters();
         }
 
         // 今日の手紙を表示
@@ -1623,63 +1451,42 @@
             filterLetters('today');
         }
 
-        // 変更: 統計情報の更新ロジックを修正
+        // 統計情報の更新
         function updateStats() {
             const today = new Date().toISOString().split('T')[0];
             const displayableLetters = letters.filter(l => !l.deliveryDate || l.deliveryDate <= today);
-
-            const total = displayableLetters.length;
-            const opened = displayableLetters.filter(l => l.isOpened).length;
-            const replies = displayableLetters.filter(l => l.parentLetterId !== null).length;
-            
-            document.getElementById('total-letters').textContent = total;
-            document.getElementById('delivered-letters').textContent = opened;
-            document.getElementById('reply-letters').textContent = replies;
+            document.getElementById('total-letters').textContent = displayableLetters.length;
+            document.getElementById('delivered-letters').textContent = displayableLetters.filter(l => l.isOpened).length;
+            document.getElementById('reply-letters').textContent = displayableLetters.filter(l => l.parentLetterId !== null).length;
         }
 
         // カレンダーの描画
         function renderCalendar() {
             const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
             document.getElementById('calendar-month').textContent = `${currentYear}年 ${monthNames[currentMonth]}`;
-            
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const grid = document.getElementById('calendar-grid');
-            
             grid.innerHTML = '';
-            
-            const dayHeaders = ['日', '月', '火', '水', '木', '金', '土'];
-            dayHeaders.forEach(day => {
+            ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
                 const header = document.createElement('div');
-                header.style.textAlign = 'center';
-                header.style.fontWeight = 'bold';
-                header.style.color = '#888';
+                header.style.cssText = 'text-align: center; font-weight: bold; color: #888;';
                 header.textContent = day;
                 grid.appendChild(header);
             });
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
             
-            for (let i = 0; i < firstDay; i++) {
-                grid.appendChild(document.createElement('div'));
-            }
-            
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const today = new Date().toISOString().split('T')[0];
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
                 dayElement.textContent = day;
-                
                 const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const today = new Date().toISOString().split('T')[0];
-                
-                if (dateStr === today) {
-                    dayElement.classList.add('today');
-                }
-                
-                const hasLetter = letters.some(l => l.deliveryDate === dateStr && l.deliveryDate <= today);
-                
-                if (hasLetter) {
+                if (dateStr === today) dayElement.classList.add('today');
+                if (letters.some(l => l.deliveryDate === dateStr && l.deliveryDate <= today)) {
                     dayElement.classList.add('has-letter');
                 }
-                
                 dayElement.onclick = () => showLettersForDate(dateStr);
                 grid.appendChild(dayElement);
             }
@@ -1688,13 +1495,8 @@
         // 月を変更
         function changeMonth(delta) {
             currentMonth += delta;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            } else if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
             renderCalendar();
         }
 
@@ -1702,240 +1504,110 @@
         function showLettersForDate(date) {
             const today = new Date().toISOString().split('T')[0];
             const dateLetters = letters.filter(l => l.deliveryDate === date && l.deliveryDate <= today);
-            
             if (dateLetters.length === 0) {
                 showToast('この日に届いた手紙はありません');
                 return;
             }
-            
-            const modal = document.getElementById('letter-modal');
-            const modalBody = document.getElementById('modal-body');
-            const modalTitle = document.getElementById('modal-title');
-            
-            modalTitle.textContent = `${new Date(date).toLocaleDateString('ja-JP')}の手紙`;
-            modalBody.innerHTML = `
-                <div style="margin-top: 1rem;">
-                    ${dateLetters.map(letter => `
-                        <div style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 0.5rem; margin-bottom: 1rem; cursor: pointer;"
-                             onclick="closeModal(); openLetter('${letter.id}')">
-                            <h4>${escapeHtml(letter.title)}</h4>
-                            <p style="color: #888; font-size: 0.9rem;">
-                                ${getCategoryName(letter.category)}
-                                ${letter.images && letter.images.length > 0 ? `・📷 ${letter.images.length}枚` : ''}
-                                ${letter.hasReply ? '・💌 返事あり' : ''}
-                                ${letter.parentLetterId ? '・📨 返事' : ''}
-                            </p>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            
-            modal.classList.add('show');
+            openLetter(dateLetters[0].id); // 複数ある場合は最初のものを開く
         }
 
-        // データエクスポート
+        // データエクスポート/インポート
         function exportData() {
-            const data = {
-                version: '1.2',
-                exportDate: new Date().toISOString(),
-                letters: letters
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `future-letters-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: '1.2', letters }, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `future-letters-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
             showToast('データをエクスポートしました');
         }
 
-        // データインポート
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (data.letters && Array.isArray(data.letters)) {
-                        if (confirm('現在のデータを置き換えてもよろしいですか？')) {
-                            letters = data.letters.map(letter => ({
-                                ...letter,
-                                isOpened: letter.isOpened !== undefined ? letter.isOpened : false,
-                                parentLetterId: letter.parentLetterId || null,
-                                hasReply: letter.hasReply !== undefined ? letter.hasReply : false
-                            }));
-                            saveToLocalStorage();
-                            showToast('データをインポートしました');
-                            showSection('letters');
-                            updateStats();
-                            checkTodaysLetters();
-                        }
-                    } else {
-                        throw new Error('Invalid data format');
+                    if (data.letters && Array.isArray(data.letters) && confirm('現在のデータを置き換えますか？')) {
+                        letters = data.letters;
+                        saveToLocalStorage();
+                        showToast('データをインポートしました');
+                        showSection('letters');
                     }
-                } catch (error) {
-                    showToast('インポートに失敗しました');
-                }
+                } catch (error) { showToast('インポートに失敗しました'); }
             };
             reader.readAsText(file);
         }
 
-        // トースト通知
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // 画像処理関数
-        function handleImageSelect(event) {
-            processImages(event.target.files);
-        }
-
-        function handleEditImageSelect(event) {
-            processImages(event.target.files, true);
-        }
-
+        // 画像処理
         function processImages(files, isEdit = false) {
-            const maxSize = 1024 * 1024 * 2; // 2MB
-            const imageArray = isEdit ? editingImages : tempImages;
-            
+            const targetArray = isEdit ? editingImages : tempImages;
             Array.from(files).forEach(file => {
-                if (!file.type.startsWith('image/')) {
-                    showToast('画像ファイルのみ選択できます');
+                if (!file.type.startsWith('image/') || file.size > 2 * 1024 * 1024) {
+                    showToast('2MB以下の画像ファイルを選択してください');
                     return;
                 }
-                
-                if (file.size > maxSize) {
-                    showToast('画像サイズは2MB以下にしてください');
-                    return;
-                }
-                
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = e => {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
                         const maxWidth = 800;
                         let { width, height } = img;
-                        if (width > maxWidth) {
-                            height = (maxWidth / width) * height;
-                            width = maxWidth;
-                        }
-                        
-                        canvas.width = width;
-                        canvas.height = height;
+                        if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
+                        canvas.width = width; canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                        imageArray.push(resizedDataUrl);
-                        
-                        if (isEdit) updateEditImagePreview();
-                        else updateImagePreview();
+                        targetArray.push(canvas.toDataURL('image/jpeg', 0.8));
+                        if (isEdit) updateEditImagePreview(); else updateImagePreview();
                     };
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             });
         }
-
+        function handleImageSelect(event) { processImages(event.target.files); }
+        function handleEditImageSelect(event) { processImages(event.target.files, true); }
         function updateImagePreview() {
-            const container = document.getElementById('image-preview-container');
-            container.innerHTML = tempImages.map((img, index) => `
-                <div class="image-preview">
-                    <img src="${img}" alt="画像${index + 1}">
-                    <button class="image-remove-btn" onclick="removeImage(${index})">×</button>
-                </div>
-            `).join('');
+            document.getElementById('image-preview-container').innerHTML = tempImages.map((img, index) => `<div class="image-preview"><img src="${img}"><button class="image-remove-btn" onclick="removeImage(${index})">×</button></div>`).join('');
         }
-
         function updateEditImagePreview() {
-            const container = document.getElementById('edit-image-preview-container');
-            container.innerHTML = editingImages.map((img, index) => `
-                <div class="image-preview">
-                    <img src="${img}" alt="画像${index + 1}">
-                    <button class="image-remove-btn" onclick="removeEditImage(${index})">×</button>
-                </div>
-            `).join('');
+            document.getElementById('edit-image-preview-container').innerHTML = editingImages.map((img, index) => `<div class="image-preview"><img src="${img}"><button class="image-remove-btn" onclick="removeEditImage(${index})">×</button></div>`).join('');
         }
-
-        function removeImage(index) {
-            tempImages.splice(index, 1);
-            updateImagePreview();
-        }
-
-        function removeEditImage(index) {
-            editingImages.splice(index, 1);
-            updateEditImagePreview();
-        }
-
-        // ドラッグ&ドロップの設定
+        function removeImage(index) { tempImages.splice(index, 1); updateImagePreview(); }
+        function removeEditImage(index) { editingImages.splice(index, 1); updateEditImagePreview(); }
         function setupDragAndDrop() {
             const uploadArea = document.getElementById('image-upload-area');
-            
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                processImages(e.dataTransfer.files);
-            });
+            uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+            uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); processImages(e.dataTransfer.files); });
         }
-
-        // ペーストイベントの処理
         function handlePaste(e) {
             if (!document.getElementById('compose-section').classList.contains('active')) return;
-            
-            const files = Array.from(e.clipboardData.items)
-                .filter(item => item.type.startsWith('image/'))
-                .map(item => item.getAsFile());
-            
-            if (files.length > 0) {
-                processImages(files);
-                showToast(`${files.length}枚の画像を貼り付けました`);
-            }
+            const files = Array.from(e.clipboardData.items).filter(item => item.type.startsWith('image/')).map(item => item.getAsFile());
+            if (files.length > 0) { processImages(files); showToast(`${files.length}枚の画像を貼り付けました`); }
         }
+        function openImageModal(src) { document.getElementById('modal-image').src = src; document.getElementById('image-modal').classList.add('show'); }
+        function closeImageModal() { document.getElementById('image-modal').classList.remove('show'); }
 
-        // 画像モーダルの表示
-        function openImageModal(src) {
-            const modal = document.getElementById('image-modal');
-            const modalImage = document.getElementById('modal-image');
-            modalImage.src = src;
-            modal.classList.add('show');
-        }
-
-        function closeImageModal() {
-            document.getElementById('image-modal').classList.remove('show');
+        // トースト通知
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         // グローバルスコープに公開
         Object.assign(window, {
             showSection, selectCategory, saveLetter, resetForm, filterLetters,
-            openLetter, editLetter, updateLetter, deleteLetter, closeModal,
-            closeModalOnBackground, changeMonth, showLettersForDate, exportData,
-            importData, showTodaysLetters, handleImageSelect, handleEditImageSelect,
-            removeImage, removeEditImage, openImageModal, closeImageModal, writeReply
+            openLetter, editLetter, updateLetter, deleteLetter, closeModal, closeModalOnBackground,
+            changeMonth, showLettersForDate, exportData, importData, showTodaysLetters,
+            handleImageSelect, handleEditImageSelect, removeImage, removeEditImage,
+            openImageModal, closeImageModal, showReplyFormInModal, hideReplyFormInModal, saveReplyFromModal
         });
     </script>
 </body>
-</html>
-
 </html>

@@ -1239,18 +1239,10 @@
             const container = document.getElementById('modal-reply-form-container');
             document.getElementById('modal-buttons').style.display = 'none';
 
-            let deliveryDateHtml = '';
-            if (parentLetter.category === 'date') {
-                const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
-                deliveryDateHtml = `<div class="form-group"><label class="form-label">配信日を選択</label><input type="date" id="modal-reply-delivery-date" class="form-input" min="${tomorrow.toISOString().split('T')[0]}"></div>`;
-            }
-
             container.innerHTML = `
                 <div class="letter-form" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; background: transparent; backdrop-filter: none; box-shadow: none; padding: 2rem 0 0 0;">
                     <h4 style="margin-bottom: 1.5rem;">返事を書く</h4>
                     <form onsubmit="saveReplyFromModal(event, '${letterId}')">
-                        ${deliveryDateHtml}
-                        <div class="form-group"><label class="form-label">件名（任意）</label><input type="text" id="modal-reply-title" class="form-input" placeholder="Re: ${escapeHtml(parentLetter.title)}"></div>
                         <div class="form-group"><label class="form-label">返事の内容</label><textarea id="modal-reply-content" class="form-textarea" required></textarea></div>
                         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                             <button type="button" class="btn" onclick="hideReplyFormInModal()">キャンセル</button>

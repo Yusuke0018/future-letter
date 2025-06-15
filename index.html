@@ -855,7 +855,6 @@
             
             <div class="filter-container">
                 <div class="filter-chip active" data-filter="all" onclick="filterLetters('all')">届いた手紙</div>
-                <div class="filter-chip" data-filter="replies" onclick="filterLetters('replies')">返事</div>
                 <div class="filter-chip" data-filter="someday" onclick="filterLetters('someday')">いつかの自分</div>
                 <div class="filter-chip" data-filter="date" onclick="filterLetters('date')">特定の日付</div>
             </div>
@@ -870,8 +869,8 @@
                     <div class="stat-label">開封済みの手紙</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="reply-letters">0</div>
-                    <div class="stat-label">返事の数</div>
+                    <div class="stat-number" id="unopened-letters">0</div>
+                    <div class="stat-label">未開封の手紙</div>
                 </div>
             </div>
 
@@ -1065,11 +1064,9 @@
             const displayableLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
             
             if (currentFilter === 'all') {
-                lettersToDisplay = displayableLetters.filter(l => !l.parentLetterId);
-            } else if (currentFilter === 'replies') {
-                lettersToDisplay = displayableLetters.filter(l => l.parentLetterId !== null);
+                lettersToDisplay = displayableLetters;
             } else { // someday or date
-                lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter && !l.parentLetterId);
+                lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter);
             }
             
             grid.style.display = lettersToDisplay.length > 0 ? 'grid' : 'none';
@@ -1328,7 +1325,7 @@
             const deliveredLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
             document.getElementById('total-letters').textContent = deliveredLetters.length;
             document.getElementById('delivered-letters').textContent = deliveredLetters.filter(l => l.isOpened).length;
-            document.getElementById('reply-letters').textContent = deliveredLetters.filter(l => l.parentLetterId !== null).length;
+            document.getElementById('unopened-letters').textContent = deliveredLetters.filter(l => !l.isOpened).length;
         }
 
         // カレンダーの描画

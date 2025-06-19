@@ -12,10 +12,10 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
             min-height: 100vh;
-            color: #e0e0e0;
+            color: #000000;
             line-height: 1.6;
             overflow-x: hidden;
         }
@@ -38,16 +38,20 @@
             75% { transform: translateX(5px); }
         }
 
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         /* ヘッダー */
         .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            padding: 2rem 2rem;
+            border-bottom: 1px solid #000000;
             position: sticky;
             top: 0;
             z-index: 1000;
-            animation: fadeIn 0.5s ease-out;
+            animation: slideDown 0.5s ease-out;
         }
 
         .header-content {
@@ -59,26 +63,31 @@
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            color: #000000;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 2rem;
         }
 
         /* 通知バー */
         .notification-bar {
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
+            color: #ffffff;
             padding: 1rem;
             text-align: center;
             display: none;
-            animation: fadeIn 0.5s ease-out;
+            animation: slideDown 0.5s ease-out;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .notification-bar:hover {
+            background: #1a1a1a;
         }
 
         .notification-bar.show {
@@ -87,51 +96,53 @@
 
         /* ボタン */
         .btn {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            color: #e0e0e0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 0.5rem 1.5rem;
-            border-radius: 2rem;
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
+            padding: 0.75rem 2rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         .btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #000000;
+            color: #ffffff;
+            transform: translateY(-1px);
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-            border: none;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #000000;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            background: #ffffff;
+            color: #000000;
         }
 
         .btn-reply {
-            background: linear-gradient(45deg, #48bb78 0%, #38a169 100%);
-            border: none;
-            color: white;
-            padding: 0.3rem 0.8rem;
-            font-size: 0.8rem;
+            background: #000000;
+            border: 1px solid #000000;
+            color: #ffffff;
+            padding: 0.4rem 1rem;
+            font-size: 0.75rem;
+            text-transform: none;
         }
 
         .btn-reply:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(72, 187, 120, 0.4);
+            background: #ffffff;
+            color: #000000;
         }
 
         /* メインコンテナ */
         .container {
             max-width: 1200px;
-            margin: 2rem auto;
+            margin: 4rem auto;
             padding: 0 2rem;
         }
 
@@ -147,46 +158,44 @@
 
         /* フォーム */
         .letter-form {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            padding: 3rem;
+            border: 1px solid #000000;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         /* 返事フォーム用のスタイル */
         .reply-indicator {
-            background: linear-gradient(45deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
+            background: #000000;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
         }
 
         /* 画像アップロードエリア */
         .image-upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 0.5rem;
-            padding: 2rem;
+            border: 2px dashed #000000;
+            padding: 3rem;
             text-align: center;
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
-            background: rgba(255, 255, 255, 0.02);
+            background: #ffffff;
         }
 
         .image-upload-area:hover {
-            border-color: rgba(102, 126, 234, 0.5);
-            background: rgba(102, 126, 234, 0.05);
+            background: #f8f8f8;
         }
 
         .image-upload-area.dragover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            background: #f0f0f0;
+            border-style: solid;
         }
 
         .image-preview-container {
@@ -200,9 +209,8 @@
             position: relative;
             width: 150px;
             height: 150px;
-            border-radius: 0.5rem;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #000000;
         }
 
         .image-preview img {
@@ -215,10 +223,9 @@
             position: absolute;
             top: 0.5rem;
             right: 0.5rem;
-            background: rgba(255, 59, 48, 0.9);
-            color: white;
+            background: #000000;
+            color: #ffffff;
             border: none;
-            border-radius: 50%;
             width: 30px;
             height: 30px;
             cursor: pointer;
@@ -230,28 +237,27 @@
         }
 
         .image-remove-btn:hover {
-            transform: scale(1.1);
-            background: rgba(255, 59, 48, 1);
+            background: #333333;
         }
 
         /* 手紙内の画像表示 */
         .letter-images {
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 1rem;
         }
 
         .letter-image {
             max-width: 100%;
-            border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 1px solid #000000;
         }
 
         .letter-image:hover {
             transform: scale(1.02);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         }
 
         /* 画像モーダル */
@@ -262,7 +268,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             z-index: 3000;
             cursor: pointer;
         }
@@ -276,39 +282,43 @@
         .image-modal img {
             max-width: 90%;
             max-height: 90%;
-            border-radius: 0.5rem;
+            border: 1px solid #000000;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             font-weight: 500;
-            color: #b8b8b8;
+            color: #000000;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
         }
 
         .form-input,
         .form-textarea,
         .form-select {
             width: 100%;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0.5rem;
-            color: #e0e0e0;
+            padding: 1rem;
+            background: #ffffff;
+            border: 1px solid #000000;
+            color: #000000;
             font-size: 1rem;
             transition: all 0.3s ease;
+            font-family: inherit;
         }
 
         .form-input:focus,
         .form-textarea:focus,
         .form-select:focus {
             outline: none;
-            border-color: #667eea;
-            background: rgba(255, 255, 255, 0.08);
+            border-width: 2px;
+            padding: calc(1rem - 1px);
         }
 
         .form-textarea {
@@ -319,44 +329,47 @@
         /* カテゴリー選択 */
         .category-selector {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
         }
 
         .category-option {
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.5rem;
+            padding: 2rem;
+            background: #ffffff;
+            border: 1px solid #000000;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
         }
 
         .category-option:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f8f8f8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .category-option.selected {
-            background: rgba(102, 126, 234, 0.2);
-            border-color: #667eea;
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .category-option.selected div {
+            color: #ffffff !important;
         }
 
         /* 手紙グリッド */
         .letters-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
         }
 
         .letter-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            padding: 2rem;
+            border: 1px solid #000000;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
@@ -366,9 +379,8 @@
         }
 
         .letter-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
         
         .letter-content {
@@ -376,17 +388,18 @@
         }
 
         .letter-card.future-locked {
-            border-color: rgba(102, 126, 234, 0.3);
+            border-style: dashed;
             cursor: default;
+            opacity: 0.5;
         }
 
         .letter-card.has-images::after {
             content: '📷';
             position: absolute;
-            bottom: 1rem;
-            right: 1rem;
-            font-size: 1.2rem;
-            opacity: 0.7;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 1rem;
+            opacity: 0.5;
         }
 
         .letter-card.unopened {
@@ -399,19 +412,19 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(20, 20, 40, 0.95);
+            background: #000000;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             gap: 1rem;
-            border-radius: 1rem;
             cursor: pointer;
             z-index: 5;
         }
 
         .unopened-overlay:hover {
-            background: rgba(0, 0, 0, 0.6);
+            background: #1a1a1a;
         }
 
         .unopened-icon {
@@ -420,49 +433,57 @@
         }
 
         .unopened-text {
-            font-size: 1.2rem;
-            font-weight: bold;
+            font-size: 1rem;
+            font-weight: 300;
             text-align: center;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
         }
 
         .letter-actions {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
+            top: 1.5rem;
+            right: 1.5rem;
             display: flex;
             gap: 0.5rem;
             z-index: 10;
         }
 
         .letter-date {
-            font-size: 0.9rem;
-            color: #888;
+            font-size: 0.8rem;
+            color: #666666;
             margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .letter-preview {
-            color: #e0e0e0;
+            color: #000000;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            line-height: 1.8;
         }
 
         .letter-category {
-            font-size: 0.8rem;
-            color: #667eea;
-            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #666666;
+            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         .letter-reply-badge {
             display: inline-block;
-            background: linear-gradient(45deg, #48bb78 0%, #38a169 100%);
-            color: white;
-            padding: 0.2rem 0.6rem;
-            border-radius: 1rem;
-            font-size: 0.7rem;
+            background: #000000;
+            color: #ffffff;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.65rem;
             margin-right: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         /* モーダル */
@@ -473,7 +494,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.95);
             z-index: 2000;
             padding: 2rem;
             overflow-y: auto;
@@ -486,42 +507,51 @@
         }
 
         .modal-content {
-            background: rgba(36, 36, 62, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 2rem;
-            border-radius: 1rem;
-            max-width: 600px;
+            background: #ffffff;
+            padding: 3rem;
+            max-width: 700px;
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid #000000;
             animation: fadeIn 0.3s ease-out;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
         }
         
         .modal-body {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #000000;
+            padding-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            font-weight: 300;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
         }
 
         .modal-close {
             background: none;
             border: none;
-            color: #e0e0e0;
-            font-size: 1.5rem;
+            color: #000000;
+            font-size: 2rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            line-height: 1;
+            padding: 0;
+            font-weight: 300;
         }
 
         .modal-close:hover {
-            color: #667eea;
             transform: rotate(90deg);
         }
 
@@ -529,48 +559,56 @@
         .thread-container {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
         .thread-letter {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            border-left: 3px solid rgba(102, 126, 234, 0.5);
+            background: #ffffff;
+            padding: 2rem;
+            border: 1px solid #000000;
+            position: relative;
         }
 
         .thread-letter.reply {
-            border-left-color: rgba(72, 187, 120, 0.8);
-            margin-left: 2rem;
+            margin-left: 3rem;
+            background: #f8f8f8;
         }
 
         .thread-connector {
-            width: 2px;
+            width: 1px;
             height: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            margin-left: 2rem;
+            background: #000000;
+            margin-left: 3rem;
         }
 
         /* カレンダー */
         .calendar-container {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            padding: 3rem;
+            border: 1px solid #000000;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .calendar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-header h3 {
+            font-weight: 300;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 0.5rem;
+            gap: 0;
+            border-top: 1px solid #000000;
+            border-left: 1px solid #000000;
         }
 
         .calendar-day {
@@ -578,114 +616,141 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 0.5rem;
+            background: #ffffff;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            border-right: 1px solid #000000;
+            border-bottom: 1px solid #000000;
         }
 
         .calendar-day:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f8f8f8;
         }
 
         .calendar-day.has-letter {
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.5);
+            background: #000000;
+            color: #ffffff;
         }
 
         .calendar-day.today {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: #ffffff;
             font-weight: bold;
+            box-shadow: inset 0 0 0 2px #000000;
         }
 
         /* フィルター */
         .filter-container {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
             justify-content: center;
         }
 
         .filter-chip {
-            padding: 0.5rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 2rem;
+            padding: 0.5rem 1.5rem;
+            background: #ffffff;
+            border: 1px solid #000000;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
         }
 
         .filter-chip:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f8f8f8;
         }
 
         .filter-chip.active {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: #667eea;
+            background: #000000;
+            color: #ffffff;
         }
 
         /* 統計情報 */
         .stats-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 1.5rem;
-            border-radius: 1rem;
+            background: #ffffff;
+            padding: 2rem;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid #000000;
         }
 
         .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 3rem;
+            font-weight: 300;
+            color: #000000;
+            letter-spacing: -0.02em;
         }
 
         .stat-label {
-            color: #888;
-            font-size: 0.9rem;
+            color: #666666;
+            font-size: 0.8rem;
             margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
         }
 
         /* エクスポート/インポート */
         .data-management {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #ffffff;
+            padding: 3rem;
+            border: 1px solid #000000;
             text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .data-management h3 {
+            font-weight: 300;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
         }
 
         .data-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             justify-content: center;
-            margin-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* セクションタイトル */
+        section h2 {
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            margin-bottom: 3rem;
         }
 
         /* レスポンシブ */
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .nav-buttons {
                 gap: 1rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
             }
 
             .container {
                 padding: 0 1rem;
+                margin: 2rem auto;
             }
 
             .category-selector {
@@ -696,8 +761,9 @@
                 grid-template-columns: 1fr;
             }
 
-            .filter-container {
-                justify-content: flex-start;
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
             
             .image-preview {
@@ -714,13 +780,23 @@
             }
             
             .calendar-day {
-                font-size: 0.85rem;
+                font-size: 0.75rem;
             }
             
             .calendar-day span {
                 width: 16px !important;
                 height: 16px !important;
-                font-size: 0.65rem !important;
+                font-size: 0.6rem !important;
+            }
+
+            .letter-form,
+            .calendar-container,
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
             }
         }
 
@@ -729,9 +805,9 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid #e0e0e0;
             border-radius: 50%;
-            border-top-color: #667eea;
+            border-top-color: #000000;
             animation: spin 1s ease-in-out infinite;
         }
 
@@ -742,14 +818,21 @@
         /* 空状態 */
         .empty-state {
             text-align: center;
-            padding: 4rem 2rem;
-            color: #888;
+            padding: 6rem 2rem;
+            color: #666666;
         }
 
         .empty-state-icon {
             font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.5;
+            margin-bottom: 1.5rem;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-weight: 300;
+            font-size: 1.5rem;
+            color: #000000;
+            margin-bottom: 0.5rem;
         }
 
         /* トースト通知 */
@@ -757,14 +840,14 @@
             position: fixed;
             bottom: 2rem;
             right: 2rem;
-            background: rgba(102, 126, 234, 0.9);
-            backdrop-filter: blur(10px);
+            background: #000000;
             padding: 1rem 2rem;
-            border-radius: 0.5rem;
-            color: white;
+            color: #ffffff;
             display: none;
             animation: slideIn 0.3s ease-out;
             z-index: 3000;
+            border: 1px solid #000000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         }
 
         @keyframes slideIn {
@@ -785,7 +868,7 @@
     <!-- ヘッダー -->
     <header class="header">
         <div class="header-content">
-            <div class="logo">✨ Future Letter</div>
+            <div class="logo">Future Letter</div>
             <nav class="nav-buttons">
                 <button class="btn" onclick="showSection('compose')">手紙を書く</button>
                 <button class="btn" onclick="showSection('letters')">手紙を読む</button>
@@ -796,15 +879,15 @@
     </header>
 
     <!-- 通知バー -->
-    <div id="notification-bar" class="notification-bar" onclick="showTodaysLetters()" style="cursor: pointer;">
-        <p>🎉 今日、未来からの手紙が届いています！</p>
+    <div id="notification-bar" class="notification-bar" onclick="showTodaysLetters()">
+        <p>今日、未来からの手紙が届いています</p>
     </div>
 
     <!-- メインコンテナ -->
     <main class="container">
         <!-- 作成セクション -->
         <section id="compose-section" class="section">
-            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">未来への手紙を書く</h2>
+            <h2 style="text-align: center;">未来への手紙を書く</h2>
             
             <form class="letter-form" id="letter-form" onsubmit="saveLetter(event)">
                 <div id="reply-indicator" class="reply-indicator" style="display: none;">
@@ -817,13 +900,13 @@
                     <div class="category-selector">
                         <div class="category-option" onclick="selectCategory('someday')" data-category="someday">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
-                            <div style="font-weight: bold;">いつかの自分</div>
-                            <div style="font-size: 0.8rem; color: #888;">いつ届くかは秘密です</div>
+                            <div style="font-weight: 500;">いつかの自分</div>
+                            <div style="font-size: 0.8rem; color: #666666; margin-top: 0.5rem;">いつ届くかは秘密です</div>
                         </div>
                         <div class="category-option" onclick="selectCategory('date')" data-category="date">
                             <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
-                            <div style="font-weight: bold;">特定の日付</div>
-                            <div style="font-size: 0.8rem; color: #888;">決めた日に届く</div>
+                            <div style="font-weight: 500;">特定の日付</div>
+                            <div style="font-size: 0.8rem; color: #666666; margin-top: 0.5rem;">決めた日に届く</div>
                         </div>
                     </div>
                 </div>
@@ -848,7 +931,7 @@
                     <div class="image-upload-area" id="image-upload-area" onclick="document.getElementById('image-input').click()">
                         <input type="file" id="image-input" accept="image/*" multiple style="display: none;" onchange="handleImageSelect(event)">
                         <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
-                        <p>クリックして画像を選択<br>またはドラッグ&ドロップ<br>Ctrl+V / Cmd+Vで貼り付け</p>
+                        <p style="font-size: 0.9rem; line-height: 1.6;">クリックして画像を選択<br>またはドラッグ&ドロップ<br>Ctrl+V / Cmd+Vで貼り付け</p>
                     </div>
                     <div class="image-preview-container" id="image-preview-container"></div>
                 </div>
@@ -862,7 +945,7 @@
 
         <!-- 手紙一覧セクション -->
         <section id="letters-section" class="section active">
-            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">手紙の一覧</h2>
+            <h2 style="text-align: center;">手紙の一覧</h2>
             
             <div class="filter-container">
                 <div class="filter-chip active" data-filter="all" onclick="filterLetters('all')">届いた手紙</div>
@@ -872,16 +955,20 @@
 
             <div class="stats-container">
                 <div class="stat-card">
+                    <div class="stat-number" id="all-letters">0</div>
+                    <div class="stat-label">書いた手紙の総数</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-number" id="total-letters">0</div>
-                    <div class="stat-label">届いた手紙の総数</div>
+                    <div class="stat-label">届いた手紙</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="delivered-letters">0</div>
-                    <div class="stat-label">開封済みの手紙</div>
+                    <div class="stat-label">開封済み</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="unopened-letters">0</div>
-                    <div class="stat-label">未開封の手紙</div>
+                    <div class="stat-label">未開封</div>
                 </div>
             </div>
 
@@ -891,13 +978,13 @@
                 <div class="empty-state-icon">📭</div>
                 <h3>まだ手紙がありません</h3>
                 <p>最初の手紙を書いて、未来の自分との対話を始めましょう</p>
-                <button class="btn btn-primary" onclick="showSection('compose')" style="margin-top: 1rem;">手紙を書く</button>
+                <button class="btn btn-primary" onclick="showSection('compose')" style="margin-top: 1.5rem;">手紙を書く</button>
             </div>
         </section>
 
         <!-- カレンダーセクション -->
         <section id="calendar-section" class="section">
-            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">カレンダービュー</h2>
+            <h2 style="text-align: center;">カレンダービュー</h2>
             
             <div class="calendar-container">
                 <div class="calendar-header">
@@ -911,15 +998,15 @@
 
         <!-- 設定セクション -->
         <section id="settings-section" class="section">
-            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">設定</h2>
+            <h2 style="text-align: center;">設定</h2>
             
             <div class="data-management">
-                <h3 style="margin-bottom: 1rem;">データ管理</h3>
-                <p style="color: #888; margin-bottom: 1rem;">手紙のデータをバックアップまたは復元します</p>
+                <h3>データ管理</h3>
+                <p style="color: #666666; margin-bottom: 1rem;">手紙のデータをバックアップまたは復元します</p>
                 <div class="data-buttons">
-                    <button class="btn btn-primary" onclick="exportData()">データをエクスポート</button>
+                    <button class="btn btn-primary" onclick="exportData()">エクスポート</button>
                     <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
-                    <button class="btn" onclick="document.getElementById('import-file').click()">データをインポート</button>
+                    <button class="btn" onclick="document.getElementById('import-file').click()">インポート</button>
                 </div>
             </div>
         </section>
@@ -1120,7 +1207,7 @@
                     contentHtml = `
                         <div class="letter-actions"><button class="btn btn-reply reply-btn" data-letter-id="${letter.id}">返事を書く</button></div>
                         <div class="letter-date">届いた日: ${deliveryDate}</div>
-                        <h3 style="margin: 0.5rem 0;">${escapeHtml(letter.title)}</h3>
+                        <h3 style="margin: 0.5rem 0; font-weight: 500;">${escapeHtml(letter.title)}</h3>
                         <div class="letter-preview" style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
                         ${letter.hasReply ? '<span class="letter-reply-badge" style="position: absolute; bottom: 1.5rem; left: 1.5rem;">返事あり</span>' : ''}`;
                 }
@@ -1167,7 +1254,7 @@
 
             const modal = document.getElementById('letter-modal');
             const modalBody = document.getElementById('modal-body');
-            const modalTitle = document.getElementById('modal-title'); // 修正: modalTitleの定義を追加
+            const modalTitle = document.getElementById('modal-title');
             modalTitle.textContent = '手紙の詳細';
             
             const replies = letters.filter(l => l.parentLetterId === letterId);
@@ -1183,10 +1270,10 @@
 
             const buttonsDiv = document.createElement('div');
             buttonsDiv.id = 'modal-buttons';
-            buttonsDiv.style.cssText = 'margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;';
+            buttonsDiv.style.cssText = 'margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;';
             buttonsDiv.innerHTML = `
                 ${!letter.parentLetterId ? `<button class="btn btn-reply" onclick="showReplyFormInModal('${letter.id}')">返事を書く</button>` : ''}
-                <button class="btn" onclick="deleteLetter('${letter.id}')" style="background: rgba(255, 59, 48, 0.8); margin-right: auto;">削除</button>
+                <button class="btn" onclick="deleteLetter('${letter.id}')" style="border-color: #ff0000; color: #ff0000; margin-right: auto;">削除</button>
                 <button class="btn btn-primary" onclick="closeModal()">閉じる</button>
             `;
             modalBody.appendChild(buttonsDiv);
@@ -1210,18 +1297,18 @@
             let imagesHtml = '';
             if (letter.images?.length > 0) {
                 imagesHtml = `
-                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <p style="color: #888; margin-bottom: 1rem;">📷 添付画像（${letter.images.length}枚）</p>
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #000000;">
+                        <p style="color: #666666; margin-bottom: 1rem; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">添付画像（${letter.images.length}枚）</p>
                         <div class="letter-images">${letter.images.map(img => `<img src="${img}" class="letter-image" onclick="openImageModal(this.src)">`).join('')}</div>
                     </div>`;
             }
             letterDiv.innerHTML = `
                 <div style="margin-bottom: 1rem;">
-                    <small style="color: #888;">作成日: ${createdDate}</small>
-                    ${deliveryDate ? `<br><small style="color: #888;">配信日: ${deliveryDate}</small>` : ''}
-                    ${letter.parentLetterId ? '<br><small style="color: #48bb78;">返事</small>' : ''}
+                    <small style="color: #666666; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">作成日: ${createdDate}</small>
+                    ${deliveryDate ? `<br><small style="color: #666666; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">配信日: ${deliveryDate}</small>` : ''}
+                    ${letter.parentLetterId ? '<br><small style="color: #000000; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">返事</small>' : ''}
                 </div>
-                <h3 style="margin-bottom: 1rem;">${escapeHtml(letter.title)}</h3>
+                <h3 style="margin-bottom: 1rem; font-weight: 500;">${escapeHtml(letter.title)}</h3>
                 <div style="white-space: pre-wrap; line-height: 1.8;">${escapeHtml(letter.content)}</div>
                 ${imagesHtml}`;
             return letterDiv;
@@ -1235,8 +1322,8 @@
             document.getElementById('modal-buttons').style.display = 'none';
 
             container.innerHTML = `
-                <div class="letter-form" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; background: transparent; backdrop-filter: none; box-shadow: none; padding: 2rem 0 0 0;">
-                    <h4 style="margin-bottom: 1.5rem;">返事を書く</h4>
+                <div class="letter-form" style="margin-top: 2rem; border-top: 1px solid #000000; padding-top: 2rem; background: transparent; box-shadow: none; padding: 2rem 0 0 0; border-left: none; border-right: none; border-bottom: none;">
+                    <h4 style="margin-bottom: 1.5rem; font-weight: 500;">返事を書く</h4>
                     <form onsubmit="saveReplyFromModal(event, '${letterId}')">
                         <div class="form-group"><label class="form-label">返事の内容</label><textarea id="modal-reply-content" class="form-textarea" required></textarea></div>
                         <div style="display: flex; gap: 1rem; justify-content: flex-end;">
@@ -1334,6 +1421,7 @@
         function updateStats() {
             const todayStr = new Date().toLocaleDateString('sv-SE');
             const deliveredLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
+            document.getElementById('all-letters').textContent = letters.length;
             document.getElementById('total-letters').textContent = deliveredLetters.length;
             document.getElementById('delivered-letters').textContent = deliveredLetters.filter(l => l.isOpened).length;
             document.getElementById('unopened-letters').textContent = deliveredLetters.filter(l => !l.isOpened).length;
@@ -1347,13 +1435,17 @@
             grid.innerHTML = '';
             ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
                 const header = document.createElement('div');
-                header.style.cssText = 'text-align: center; font-weight: bold; color: #888;';
+                header.style.cssText = 'text-align: center; font-weight: 500; color: #666666; padding: 1rem; border-right: 1px solid #000000; border-bottom: 1px solid #000000; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;';
                 header.textContent = day;
                 grid.appendChild(header);
             });
 
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.style.cssText = 'border-right: 1px solid #000000; border-bottom: 1px solid #000000;';
+                grid.appendChild(emptyDay);
+            }
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const todayStr = new Date().toLocaleDateString('sv-SE');
@@ -1375,12 +1467,12 @@
                     // 未開封の手紙がある場合は特別な表示
                     const unopenedCount = letters.filter(l => l.deliveryDate === dateStr && !l.isOpened).length;
                     if (unopenedCount > 0) {
-                        dayElement.innerHTML = `${day}<span style="position: absolute; top: 2px; right: 2px; background: #667eea; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center;">${unopenedCount}</span>`;
+                        dayElement.innerHTML = `${day}<span style="position: absolute; top: 4px; right: 4px; background: #ffffff; color: #000000; border: 1px solid #000000; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center;">${unopenedCount}</span>`;
                     }
                 }
                 // 未来の日付はクリックできないスタイルに
                 if (dateStr > todayStr) {
-                    dayElement.style.opacity = '0.5';
+                    dayElement.style.opacity = '0.3';
                     dayElement.style.cursor = 'default';
                 }
                 

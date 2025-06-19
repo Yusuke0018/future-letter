@@ -370,7 +370,6 @@
             background: #ffffff;
             padding: 2rem;
             border: 1px solid #000000;
-            cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -378,7 +377,11 @@
             flex-direction: column;
         }
 
-        .letter-card:hover {
+        .letter-card:not(.unopened) {
+             cursor: pointer;
+        }
+
+        .letter-card:hover:not(.unopened) {
             transform: translateY(-4px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
@@ -1028,7 +1031,7 @@
 
     <!-- 画像モーダル -->
     <div id="image-modal" class="image-modal" onclick="closeImageModal()">
-        <img id="modal-image" src="" alt="">
+        <img id="modal-image" src="" alt="拡大画像">
     </div>
 
     <script>
@@ -1167,9 +1170,16 @@
                 lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter);
             }
             
-            grid.style.display = lettersToDisplay.length > 0 ? 'grid' : 'none';
-            emptyState.style.display = lettersToDisplay.length > 0 ? 'none' : 'block';
-            grid.innerHTML = '';
+            grid.innerHTML = ''; // 先にグリッドをクリア
+            
+            if (lettersToDisplay.length > 0) {
+                grid.style.display = 'grid';
+                emptyState.style.display = 'none';
+            } else {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return; // 表示する手紙がない場合はここで終了
+            }
             
             lettersToDisplay.sort((a,b) => new Date(b.deliveryDate) - new Date(a.deliveryDate));
 
@@ -1195,33 +1205,33 @@
                     cardDiv.onclick = () => openLetter(letter.id);
                     const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
                     contentHtml = `
-                        <div class="letter-date">届いた日: ${deliveryDate}</div>
-                        <div class="letter-preview" style="margin-top: 1rem; -webkit-line-clamp: 5;">
-                            <span class="letter-reply-badge">返事</span> ${escapeHtml(letter.content)}
+                        <div class="letter-content" onclick="openLetter('${letter.id}')">
+                            <div class="letter-date">届いた日: ${deliveryDate}</div>
+                            <div class="letter-preview" style="margin-top: 1rem; -webkit-line-clamp: 5;">
+                                <span class="letter-reply-badge">返事</span> ${escapeHtml(letter.content)}
+                            </div>
                         </div>`;
-                } else { // Opened Original Letter
+                } else { // 開封済みの元の手紙
                     cardDiv.onclick = () => openLetter(letter.id);
-                    // 返事を書くボタンのデータ属性を設定
-                    cardDiv.dataset.letterId = letter.id;
                     const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
+                    
+                    // ### 修正点 ###
+                    // HTMLを文字列として構築し、onclickイベントも文字列に含めます。
+                    // これにより、後続のinnerHTML代入でイベントが失われるのを防ぎます。
                     contentHtml = `
-                        <div class="letter-actions"><button class="btn btn-reply reply-btn" data-letter-id="${letter.id}">返事を書く</button></div>
-                        <div class="letter-date">届いた日: ${deliveryDate}</div>
-                        <h3 style="margin: 0.5rem 0; font-weight: 500;">${escapeHtml(letter.title)}</h3>
-                        <div class="letter-preview" style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
-                        ${letter.hasReply ? '<span class="letter-reply-badge" style="position: absolute; bottom: 1.5rem; left: 1.5rem;">返事あり</span>' : ''}`;
+                        <div class="letter-actions">
+                            <button class="btn btn-reply" onclick="event.stopPropagation(); showReplyFormInModal('${letter.id}');">返事を書く</button>
+                        </div>
+                        <div class="letter-content">
+                            <div class="letter-date">届いた日: ${deliveryDate}</div>
+                            <h3 style="margin: 0.5rem 0; font-weight: 500;">${escapeHtml(letter.title)}</h3>
+                            <div class="letter-preview" style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
+                            ${letter.hasReply ? '<span class="letter-reply-badge" style="position: absolute; bottom: 1.5rem; left: 1.5rem;">返事あり</span>' : ''}
+                        </div>`;
                 }
+                
                 cardDiv.innerHTML = contentHtml;
                 grid.appendChild(cardDiv);
-            });
-
-            // 返事を書くボタンにイベントリスナーを追加
-            document.querySelectorAll('.reply-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const letterId = e.target.dataset.letterId;
-                    openLetter(letterId, true);
-                });
             });
         }
 
@@ -1240,7 +1250,7 @@
         }
 
         // 手紙を開く
-        function openLetter(letterId, showReplyForm = false) {
+        function openLetter(letterId) {
             const letter = letters.find(l => l.id === letterId);
             if (!letter) return;
             
@@ -1257,25 +1267,29 @@
             const modalTitle = document.getElementById('modal-title');
             modalTitle.textContent = '手紙の詳細';
             
-            const replies = letters.filter(l => l.parentLetterId === letterId);
+            const replies = letters.filter(l => l.parentLetterId === letterId).sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
             const parentLetter = letter.parentLetterId ? letters.find(l => l.id === letter.parentLetterId) : null;
             
-            modalBody.innerHTML = '';
+            modalBody.innerHTML = ''; // モーダルをクリア
             const threadContainer = document.createElement('div');
             threadContainer.className = 'thread-container';
+            
+            // スレッドの表示
             if (parentLetter) threadContainer.appendChild(createLetterElementForModal(parentLetter));
             threadContainer.appendChild(createLetterElementForModal(letter));
-            replies.forEach(reply => threadContainer.appendChild(createLetterElementForModal(reply, true)));
+            replies.forEach(reply => {
+                threadContainer.appendChild(createLetterElementForModal(reply, true))
+            });
+            
             modalBody.appendChild(threadContainer);
 
+            // ボタンと返信フォーム用のコンテナを追加
             const buttonsDiv = document.createElement('div');
             buttonsDiv.id = 'modal-buttons';
             buttonsDiv.style.cssText = 'margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;';
             buttonsDiv.innerHTML = `
                 ${!letter.parentLetterId ? `<button class="btn btn-reply" onclick="showReplyFormInModal('${letter.id}')">返事を書く</button>` : ''}
-                <button class="btn" onclick="deleteLetter('${letter.id}')" style="border-color: #ff0000; color: #ff0000; margin-right: auto;">削除</button>
-                <button class="btn btn-primary" onclick="closeModal()">閉じる</button>
-            `;
+                <button class="btn btn-primary" onclick="closeModal()">閉じる</button>`;
             modalBody.appendChild(buttonsDiv);
 
             const replyFormContainer = document.createElement('div');
@@ -1284,8 +1298,10 @@
 
             modal.classList.add('show');
             
-            if (showReplyForm) showReplyFormInModal(letterId);
-            if (document.getElementById('letters-section').classList.contains('active')) renderLetters();
+            // 手紙一覧画面がアクティブな場合のみ再描画
+            if (document.getElementById('letters-section').classList.contains('active')) {
+                renderLetters();
+            }
         }
 
         // モーダル用手紙要素の作成
@@ -1299,14 +1315,14 @@
                 imagesHtml = `
                     <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #000000;">
                         <p style="color: #666666; margin-bottom: 1rem; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">添付画像（${letter.images.length}枚）</p>
-                        <div class="letter-images">${letter.images.map(img => `<img src="${img}" class="letter-image" onclick="openImageModal(this.src)">`).join('')}</div>
+                        <div class="letter-images">${letter.images.map(img => `<img src="${img}" class="letter-image" alt="添付画像" onclick="openImageModal(this.src)">`).join('')}</div>
                     </div>`;
             }
             letterDiv.innerHTML = `
                 <div style="margin-bottom: 1rem;">
                     <small style="color: #666666; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">作成日: ${createdDate}</small>
                     ${deliveryDate ? `<br><small style="color: #666666; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">配信日: ${deliveryDate}</small>` : ''}
-                    ${letter.parentLetterId ? '<br><small style="color: #000000; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">返事</small>' : ''}
+                    ${letter.parentLetterId ? '<br><small class="letter-reply-badge" style="padding: 0.2rem 0.5rem; font-size: 0.6rem;">返事</small>' : ''}
                 </div>
                 <h3 style="margin-bottom: 1rem; font-weight: 500;">${escapeHtml(letter.title)}</h3>
                 <div style="white-space: pre-wrap; line-height: 1.8;">${escapeHtml(letter.content)}</div>
@@ -1316,9 +1332,22 @@
         
         // モーダル内で返信フォーム表示
         function showReplyFormInModal(letterId) {
+            // モーダルが開いていない場合は、まず開く
+            const modal = document.getElementById('letter-modal');
+            if (!modal.classList.contains('show')) {
+                openLetter(letterId);
+            }
+
             const parentLetter = letters.find(l => l.id === letterId);
             if (!parentLetter) return;
+
+            // 返信フォームコンテナを確実に取得
             const container = document.getElementById('modal-reply-form-container');
+            if (!container) {
+                console.error("Reply form container not found!");
+                return;
+            }
+
             document.getElementById('modal-buttons').style.display = 'none';
 
             container.innerHTML = `
@@ -1336,8 +1365,10 @@
         }
         
         function hideReplyFormInModal() {
-            document.getElementById('modal-reply-form-container').innerHTML = '';
-            document.getElementById('modal-buttons').style.display = 'flex';
+            const container = document.getElementById('modal-reply-form-container');
+            if (container) container.innerHTML = '';
+            const buttons = document.getElementById('modal-buttons');
+            if (buttons) buttons.style.display = 'flex';
         }
 
         function saveReplyFromModal(event, parentLetterId) {
@@ -1350,19 +1381,11 @@
             const category = parentLetter.category;
             let deliveryDate = null;
 
-            if (category === 'date') {
-                // 日付指定の場合は、翌日以降のランダムな日付を設定
-                const daysToAdd = Math.floor(Math.random() * 30) + 1; // 1〜30日後
-                const futureDate = new Date();
-                futureDate.setDate(futureDate.getDate() + daysToAdd);
-                deliveryDate = futureDate.toISOString().split('T')[0];
-            } else if (category === 'someday') {
-                // いつかの自分の場合は、親と同様にランダムな日付を設定
-                const randomDays = Math.floor(Math.random() * (1095 - 180 + 1)) + 180;
-                const futureDate = new Date();
-                futureDate.setDate(futureDate.getDate() + randomDays);
-                deliveryDate = futureDate.toISOString().split('T')[0];
-            }
+            // 返信はランダムな未来の日付に届く
+            const daysToAdd = Math.floor(Math.random() * 30) + 7; // 7〜36日後
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + daysToAdd);
+            deliveryDate = futureDate.toISOString().split('T')[0];
 
             const replyLetter = {
                 id: Date.now().toString(), title, content, category, deliveryDate,
@@ -1378,15 +1401,16 @@
             updateStats();
         }
 
-        function closeModal() { document.getElementById('letter-modal').classList.remove('show'); }
+        function closeModal() { document.getElementById('letter-modal').classList.remove('show'); renderLetters(); } // 閉じる時も再描画
         function closeModalOnBackground(event) { if (event.target.id === 'letter-modal') closeModal(); }
 
-        function deleteLetter(letterId) {
+        function deleteLetterWithConfirmation(letterId) {
             const letterToDelete = letters.find(l => l.id === letterId);
             const confirmMessage = letterToDelete.parentLetterId 
                 ? 'この返事を削除しますか？'
                 : 'この手紙と関連する返事をすべて削除しますか？';
 
+            // `confirm`の代わりにカスタムモーダルを実装するのが望ましいですが、ここではconfirmを使用します。
             if (confirm(confirmMessage)) {
                 const deleteIds = [letterId, ...letters.filter(l => l.parentLetterId === letterId).map(r => r.id)];
                 const parentId = letterToDelete?.parentLetterId;
@@ -1435,7 +1459,7 @@
             grid.innerHTML = '';
             ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
                 const header = document.createElement('div');
-                header.style.cssText = 'text-align: center; font-weight: 500; color: #666666; padding: 1rem; border-right: 1px solid #000000; border-bottom: 1px solid #000000; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;';
+                header.style.cssText = 'text-align: center; font-weight: 500; color: #666666; padding: 1rem 0; border-right: 1px solid #000000; border-bottom: 1px solid #000000; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;';
                 header.textContent = day;
                 grid.appendChild(header);
             });
@@ -1467,7 +1491,7 @@
                     // 未開封の手紙がある場合は特別な表示
                     const unopenedCount = letters.filter(l => l.deliveryDate === dateStr && !l.isOpened).length;
                     if (unopenedCount > 0) {
-                        dayElement.innerHTML = `${day}<span style="position: absolute; top: 4px; right: 4px; background: #ffffff; color: #000000; border: 1px solid #000000; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center;">${unopenedCount}</span>`;
+                        dayElement.innerHTML = `${day}<span style="position: absolute; top: 4px; right: 4px; background: #ffffff; color: #000000; border-radius: 50%; border: 1px solid #000000; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center;">${unopenedCount}</span>`;
                     }
                 }
                 // 未来の日付はクリックできないスタイルに
@@ -1525,10 +1549,14 @@
             reader.onload = (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
+                    // `confirm`の代わりにカスタムモーダルを実装するのが望ましい
                     if (data.letters && Array.isArray(data.letters) && confirm('現在のデータを置き換えますか？')) {
                         letters = data.letters;
                         saveToLocalStorage();
                         showToast('データをインポートしました');
+                        loadLetters(); // 状態をリフレッシュ
+                        updateStats();
+                        checkTodaysLetters();
                         showSection('letters');
                     }
                 } catch (error) { showToast('インポートに失敗しました'); }
@@ -1539,8 +1567,12 @@
         // 画像処理
         function processImages(files) {
             Array.from(files).forEach(file => {
-                if (!file.type.startsWith('image/') || file.size > 2 * 1024 * 1024) {
-                    showToast('2MB以下の画像ファイルを選択してください');
+                if (!file.type.startsWith('image/')) {
+                    showToast('画像ファイルを選択してください');
+                    return;
+                }
+                if (file.size > 5 * 1024 * 1024) { // 5MBに制限
+                    showToast('5MB以下の画像ファイルを選択してください');
                     return;
                 }
                 const reader = new FileReader();
@@ -1549,12 +1581,12 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        const maxWidth = 800;
+                        const maxWidth = 1024; // 解像度を少し上げる
                         let { width, height } = img;
                         if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
                         canvas.width = width; canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-                        tempImages.push(canvas.toDataURL('image/jpeg', 0.8));
+                        tempImages.push(canvas.toDataURL('image/jpeg', 0.85)); // 品質を少し上げる
                         updateImagePreview();
                     };
                     img.src = e.target.result;
@@ -1564,10 +1596,10 @@
         }
         function handleImageSelect(event) { processImages(event.target.files); }
         function updateImagePreview() {
-            document.getElementById('image-preview-container').innerHTML = tempImages.map((img, index) => `<div class="image-preview"><img src="${img}"><button class="image-remove-btn" onclick="removeImage(${index})">×</button></div>`).join('');
+            document.getElementById('image-preview-container').innerHTML = tempImages.map((img, index) => `<div class="image-preview"><img src="${img}" alt="プレビュー画像 ${index+1}"><button class="image-remove-btn" onclick="removeImage(${index})">×</button></div>`).join('');
         }
         
-        function removeImage(index) { tempImages.splice(index, 1); updateImagePreview(); }
+        function removeImage(index) { event.stopPropagation(); tempImages.splice(index, 1); updateImagePreview(); }
         
         function setupDragAndDrop() {
             const uploadArea = document.getElementById('image-upload-area');
@@ -1594,7 +1626,7 @@
         // グローバルスコープに公開
         Object.assign(window, {
             showSection, selectCategory, saveLetter, resetForm, filterLetters,
-            openLetter, deleteLetter, closeModal, closeModalOnBackground,
+            openLetter, deleteLetterWithConfirmation, closeModal, closeModalOnBackground,
             changeMonth, showLettersForDate, exportData, importData, showTodaysLetters,
             handleImageSelect, removeImage, openImageModal, closeImageModal, 
             showReplyFormInModal, hideReplyFormInModal, saveReplyFromModal

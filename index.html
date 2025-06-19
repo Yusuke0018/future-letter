@@ -1,1979 +1,1512 @@
-⏺ <!DOCTYPE html>
-  <html lang="ja">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Future Letter - 未来の自分への日記</title>
-      <style>
-          * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-          }
-
-          body {
-              font-family: 'Helvetica Neue', -apple-system,
-  BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-              background: #ffffff;
-              min-height: 100vh;
-              color: #000000;
-              line-height: 1.6;
-              overflow-x: hidden;
-          }
-
-          /* アニメーション */
-          @keyframes fadeIn {
-              from { opacity: 0; transform: translateY(20px); }
-              to { opacity: 1; transform: translateY(0); }
-          }
-
-          @keyframes pulse {
-              0% { transform: scale(1); }
-              50% { transform: scale(1.05); }
-              100% { transform: scale(1); }
-          }
-
-          @keyframes shake {
-              0%, 100% { transform: translateX(0); }
-              25% { transform: translateX(-5px); }
-              75% { transform: translateX(5px); }
-          }
-
-          @keyframes slideDown {
-              from { transform: translateY(-100%); opacity: 0; }
-              to { transform: translateY(0); opacity: 1; }
-          }
-
-          /* ヘッダー */
-          .header {
-              background: #ffffff;
-              padding: 2rem 2rem;
-              border-bottom: 1px solid #000000;
-              position: sticky;
-              top: 0;
-              z-index: 1000;
-              animation: slideDown 0.5s ease-out;
-          }
-
-          .header-content {
-              max-width: 1200px;
-              margin: 0 auto;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-          }
-
-          .logo {
-              font-size: 1.8rem;
-              font-weight: 300;
-              letter-spacing: -0.02em;
-              color: #000000;
-          }
-
-          .nav-buttons {
-              display: flex;
-              gap: 2rem;
-          }
-
-          /* 通知バー */
-          .notification-bar {
-              background: #000000;
-              color: #ffffff;
-              padding: 1rem;
-              text-align: center;
-              display: none;
-              animation: slideDown 0.5s ease-out;
-              cursor: pointer;
-              transition: background 0.3s ease;
-          }
-
-          .notification-bar:hover {
-              background: #1a1a1a;
-          }
-
-          .notification-bar.show {
-              display: block;
-          }
-
-          /* ボタン */
-          .btn {
-              background: #ffffff;
-              color: #000000;
-              border: 1px solid #000000;
-              padding: 0.75rem 2rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              font-size: 0.9rem;
-              font-weight: 400;
-              letter-spacing: 0.05em;
-              text-transform: uppercase;
-          }
-
-          .btn:hover {
-              background: #000000;
-              color: #ffffff;
-              transform: translateY(-1px);
-          }
-
-          .btn-primary {
-              background: #000000;
-              color: #ffffff;
-              border: 1px solid #000000;
-          }
-
-          .btn-primary:hover {
-              background: #ffffff;
-              color: #000000;
-          }
-
-          .btn-reply {
-              background: #000000;
-              border: 1px solid #000000;
-              color: #ffffff;
-              padding: 0.4rem 1rem;
-              font-size: 0.75rem;
-              text-transform: none;
-          }
-
-          .btn-reply:hover {
-              background: #ffffff;
-              color: #000000;
-          }
-
-          /* メインコンテナ */
-          .container {
-              max-width: 1200px;
-              margin: 4rem auto;
-              padding: 0 2rem;
-          }
-
-          /* セクション */
-          .section {
-              display: none;
-              animation: fadeIn 0.5s ease-out;
-          }
-
-          .section.active {
-              display: block;
-          }
-
-          /* フォーム */
-          .letter-form {
-              background: #ffffff;
-              padding: 3rem;
-              border: 1px solid #000000;
-              max-width: 800px;
-              margin: 0 auto;
-          }
-
-          /* 返事フォーム用のスタイル */
-          .reply-indicator {
-              background: #000000;
-              color: #ffffff;
-              padding: 1rem 1.5rem;
-              margin-bottom: 2rem;
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              font-size: 0.9rem;
-              letter-spacing: 0.02em;
-          }
-
-          /* 画像アップロードエリア */
-          .image-upload-area {
-              border: 2px dashed #000000;
-              padding: 3rem;
-              text-align: center;
-              transition: all 0.3s ease;
-              cursor: pointer;
-              position: relative;
-              background: #ffffff;
-          }
-
-          .image-upload-area:hover {
-              background: #f8f8f8;
-          }
-
-          .image-upload-area.dragover {
-              background: #f0f0f0;
-              border-style: solid;
-          }
-
-          .image-preview-container {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 1rem;
-              margin-top: 1rem;
-          }
-
-          .image-preview {
-              position: relative;
-              width: 150px;
-              height: 150px;
-              overflow: hidden;
-              border: 1px solid #000000;
-          }
-
-          .image-preview img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-          }
-
-          .image-remove-btn {
-              position: absolute;
-              top: 0.5rem;
-              right: 0.5rem;
-              background: #000000;
-              color: #ffffff;
-              border: none;
-              width: 30px;
-              height: 30px;
-              cursor: pointer;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 1.2rem;
-              transition: all 0.3s ease;
-          }
-
-          .image-remove-btn:hover {
-              background: #333333;
-          }
-
-          /* 手紙内の画像表示 */
-          .letter-images {
-              margin-top: 1.5rem;
-              display: flex;
-              flex-wrap: wrap;
-              gap: 1rem;
-          }
-
-          .letter-image {
-              max-width: 100%;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              border: 1px solid #000000;
-          }
-
-          .letter-image:hover {
-              transform: scale(1.02);
-              box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-          }
-
-          /* 画像モーダル */
-          .image-modal {
-              display: none;
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: rgba(255, 255, 255, 0.95);
-              z-index: 3000;
-              cursor: pointer;
-          }
-
-          .image-modal.show {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-          }
-
-          .image-modal img {
-              max-width: 90%;
-              max-height: 90%;
-              border: 1px solid #000000;
-              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-          }
-
-          .form-group {
-              margin-bottom: 2rem;
-          }
-
-          .form-label {
-              display: block;
-              margin-bottom: 0.75rem;
-              font-weight: 500;
-              color: #000000;
-              text-transform: uppercase;
-              font-size: 0.8rem;
-              letter-spacing: 0.1em;
-          }
-
-          .form-input,
-          .form-textarea,
-          .form-select {
-              width: 100%;
-              padding: 1rem;
-              background: #ffffff;
-              border: 1px solid #000000;
-              color: #000000;
-              font-size: 1rem;
-              transition: all 0.3s ease;
-              font-family: inherit;
-          }
-
-          .form-input:focus,
-          .form-textarea:focus,
-          .form-select:focus {
-              outline: none;
-              border-width: 2px;
-              padding: calc(1rem - 1px);
-          }
-
-          .form-textarea {
-              min-height: 200px;
-              resize: vertical;
-          }
-
-          /* カテゴリー選択 */
-          .category-selector {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-              gap: 2rem;
-              margin-bottom: 2rem;
-          }
-
-          .category-option {
-              padding: 2rem;
-              background: #ffffff;
-              border: 1px solid #000000;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              text-align: center;
-          }
-
-          .category-option:hover {
-              background: #f8f8f8;
-              transform: translateY(-2px);
-              box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-          }
-
-          .category-option.selected {
-              background: #000000;
-              color: #ffffff;
-          }
-
-          .category-option.selected div {
-              color: #ffffff !important;
-          }
-
-          /* 手紙グリッド */
-          .letters-grid {
-              display: grid;
-              grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-              gap: 2rem;
-              margin-top: 3rem;
-          }
-
-          .letter-card {
-              background: #ffffff;
-              padding: 2rem;
-              border: 1px solid #000000;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              position: relative;
-              overflow: hidden;
-              display: flex;
-              flex-direction: column;
-          }
-
-          .letter-card:hover {
-              transform: translateY(-4px);
-              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-          }
-
-          .letter-content {
-              flex-grow: 1;
-          }
-
-          .letter-card.future-locked {
-              border-style: dashed;
-              cursor: default;
-              opacity: 0.5;
-          }
-
-          .letter-card.has-images::after {
-              content: '📷';
-              position: absolute;
-              bottom: 1.5rem;
-              right: 1.5rem;
-              font-size: 1rem;
-              opacity: 0.5;
-          }
-
-          .letter-card.unopened {
-              position: relative;
-          }
-
-          .unopened-overlay {
-              position: absolute;
-              top: 0;
-              left: 0;
-              right: 0;
-              bottom: 0;
-              background: #000000;
-              color: #ffffff;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              flex-direction: column;
-              gap: 1rem;
-              cursor: pointer;
-              z-index: 5;
-          }
-
-          .unopened-overlay:hover {
-              background: #1a1a1a;
-          }
-
-          .unopened-icon {
-              font-size: 3rem;
-              animation: shake 2s ease-in-out infinite;
-          }
-
-          .unopened-text {
-              font-size: 1rem;
-              font-weight: 300;
-              text-align: center;
-              letter-spacing: 0.1em;
-              text-transform: uppercase;
-          }
-
-          .letter-actions {
-              position: absolute;
-              top: 1.5rem;
-              right: 1.5rem;
-              display: flex;
-              gap: 0.5rem;
-              z-index: 10;
-          }
-
-          .letter-actions .btn-reply {
-              position: relative;
-              z-index: 20;
-          }
-
-          .letter-date {
-              font-size: 0.8rem;
-              color: #666666;
-              margin-bottom: 0.5rem;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-          }
-
-          .letter-preview {
-              color: #000000;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              display: -webkit-box;
-              -webkit-line-clamp: 3;
-              -webkit-box-orient: vertical;
-              line-height: 1.8;
-          }
-
-          .letter-category {
-              font-size: 0.75rem;
-              color: #666666;
-              margin-top: 1rem;
-              text-transform: uppercase;
-              letter-spacing: 0.1em;
-          }
-
-          .letter-reply-badge {
-              display: inline-block;
-              background: #000000;
-              color: #ffffff;
-              padding: 0.25rem 0.75rem;
-              font-size: 0.65rem;
-              margin-right: 0.5rem;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-          }
-
-          .letter-category-badge {
-              display: inline-block;
-              background: #ffffff;
-              color: #000000;
-              border: 1px solid #000000;
-              padding: 0.25rem 0.75rem;
-              font-size: 0.65rem;
-              margin-bottom: 0.5rem;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-          }
-
-          .letter-category-badge.someday {
-              background: #f0f0f0;
-          }
-
-          .letter-category-badge.date {
-              background: #e0e0e0;
-          }
-
-          /* モーダル */
-          .modal {
-              display: none;
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: rgba(255, 255, 255, 0.95);
-              z-index: 2000;
-              padding: 2rem;
-              overflow-y: auto;
-          }
-
-          .modal.show {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-          }
-
-          .modal-content {
-              background: #ffffff;
-              padding: 3rem;
-              max-width: 700px;
-              width: 100%;
-              border: 1px solid #000000;
-              animation: fadeIn 0.3s ease-out;
-              max-height: 90vh;
-              overflow-y: auto;
-              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-          }
-
-          .modal-body {
-              display: flex;
-              flex-direction: column;
-              gap: 2rem;
-          }
-
-          .modal-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 2rem;
-              border-bottom: 1px solid #000000;
-              padding-bottom: 1.5rem;
-          }
-
-          .modal-header h3 {
-              font-weight: 300;
-              font-size: 1.5rem;
-              letter-spacing: -0.02em;
-          }
-
-          .modal-close {
-              background: none;
-              border: none;
-              color: #000000;
-              font-size: 2rem;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              line-height: 1;
-              padding: 0;
-              font-weight: 300;
-          }
-
-          .modal-close:hover {
-              transform: rotate(90deg);
-          }
-
-          /* スレッド表示 */
-          .thread-container {
-              display: flex;
-              flex-direction: column;
-              gap: 2rem;
-          }
-
-          .thread-letter {
-              background: #ffffff;
-              padding: 2rem;
-              border: 1px solid #000000;
-              position: relative;
-          }
-
-          .thread-letter.reply {
-              margin-left: 3rem;
-              background: #f8f8f8;
-          }
-
-          .thread-connector {
-              width: 1px;
-              height: 20px;
-              background: #000000;
-              margin-left: 3rem;
-          }
-
-          /* カレンダー */
-          .calendar-container {
-              background: #ffffff;
-              padding: 3rem;
-              border: 1px solid #000000;
-              max-width: 800px;
-              margin: 0 auto;
-          }
-
-          .calendar-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 2rem;
-          }
-
-          .calendar-header h3 {
-              font-weight: 300;
-              font-size: 1.5rem;
-              letter-spacing: -0.02em;
-          }
-
-          .calendar-grid {
-              display: grid;
-              grid-template-columns: repeat(7, 1fr);
-              gap: 0;
-              border-top: 1px solid #000000;
-              border-left: 1px solid #000000;
-          }
-
-          .calendar-day {
-              aspect-ratio: 1;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: #ffffff;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              position: relative;
-              font-size: 0.9rem;
-              border-right: 1px solid #000000;
-              border-bottom: 1px solid #000000;
-          }
-
-          .calendar-day:hover {
-              background: #f8f8f8;
-          }
-
-          .calendar-day.has-letter {
-              background: #000000;
-              color: #ffffff;
-          }
-
-          .calendar-day.today {
-              background: #ffffff;
-              font-weight: bold;
-              box-shadow: inset 0 0 0 2px #000000;
-          }
-
-          /* フィルター */
-          .filter-container {
-              display: flex;
-              gap: 1.5rem;
-              margin-bottom: 2rem;
-              flex-wrap: wrap;
-              justify-content: center;
-          }
-
-          .filter-chip {
-              padding: 0.5rem 1.5rem;
-              background: #ffffff;
-              border: 1px solid #000000;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              text-transform: uppercase;
-              font-size: 0.8rem;
-              letter-spacing: 0.1em;
-          }
-
-          .filter-chip:hover {
-              background: #f8f8f8;
-          }
-
-          .filter-chip.active {
-              background: #000000;
-              color: #ffffff;
-          }
-
-          /* 統計情報 */
-          .stats-container {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 2rem;
-              margin-bottom: 3rem;
-          }
-
-          .stat-card {
-              background: #ffffff;
-              padding: 2rem;
-              text-align: center;
-              border: 1px solid #000000;
-          }
-
-          .stat-number {
-              font-size: 3rem;
-              font-weight: 300;
-              color: #000000;
-              letter-spacing: -0.02em;
-          }
-
-          .stat-label {
-              color: #666666;
-              font-size: 0.8rem;
-              margin-top: 0.5rem;
-              text-transform: uppercase;
-              letter-spacing: 0.1em;
-          }
-
-          /* エクスポート/インポート */
-          .data-management {
-              background: #ffffff;
-              padding: 3rem;
-              border: 1px solid #000000;
-              text-align: center;
-              max-width: 600px;
-              margin: 0 auto;
-          }
-
-          .data-management h3 {
-              font-weight: 300;
-              font-size: 1.5rem;
-              letter-spacing: -0.02em;
-              margin-bottom: 1rem;
-          }
-
-          .data-buttons {
-              display: flex;
-              gap: 1.5rem;
-              justify-content: center;
-              margin-top: 2rem;
-          }
-
-          /* セクションタイトル */
-          section h2 {
-              font-weight: 300;
-              letter-spacing: -0.02em;
-              margin-bottom: 3rem;
-          }
-
-          /* レスポンシブ */
-          @media (max-width: 768px) {
-              .header-content {
-                  flex-direction: column;
-                  gap: 1.5rem;
-              }
-
-              .nav-buttons {
-                  gap: 1rem;
-                  flex-wrap: wrap;
-                  justify-content: center;
-              }
-
-              .btn {
-                  padding: 0.5rem 1rem;
-                  font-size: 0.8rem;
-              }
-
-              .container {
-                  padding: 0 1rem;
-                  margin: 2rem auto;
-              }
-
-              .category-selector {
-                  grid-template-columns: 1fr;
-              }
-
-              .letters-grid {
-                  grid-template-columns: 1fr;
-              }
-
-              .filter-container {
-                  justify-content: flex-start;
-              }
-
-              .stats-container {
-                  grid-template-columns: repeat(2, 1fr);
-                  gap: 1rem;
-              }
-
-              .image-preview {
-                  width: 100px;
-                  height: 100px;
-              }
-
-              .letter-image {
-                  max-width: 100% !important;
-              }
-
-              .thread-letter.reply {
-                  margin-left: 1rem;
-              }
-
-              .calendar-day {
-                  font-size: 0.75rem;
-              }
-
-              .calendar-day span {
-                  width: 16px !important;
-                  height: 16px !important;
-                  font-size: 0.6rem !important;
-              }
-
-              .letter-form,
-              .calendar-container,
-              .modal-content {
-                  padding: 1.5rem;
-              }
-
-              .stat-number {
-                  font-size: 2rem;
-              }
-          }
-
-          /* ローディング */
-          .loading {
-              display: inline-block;
-              width: 20px;
-              height: 20px;
-              border: 2px solid #e0e0e0;
-              border-radius: 50%;
-              border-top-color: #000000;
-              animation: spin 1s ease-in-out infinite;
-          }
-
-          @keyframes spin {
-              to { transform: rotate(360deg); }
-          }
-
-          /* 空状態 */
-          .empty-state {
-              text-align: center;
-              padding: 6rem 2rem;
-              color: #666666;
-          }
-
-          .empty-state-icon {
-              font-size: 4rem;
-              margin-bottom: 1.5rem;
-              opacity: 0.3;
-          }
-
-          .empty-state h3 {
-              font-weight: 300;
-              font-size: 1.5rem;
-              color: #000000;
-              margin-bottom: 0.5rem;
-          }
-
-          /* トースト通知 */
-          .toast {
-              position: fixed;
-              bottom: 2rem;
-              right: 2rem;
-              background: #000000;
-              padding: 1rem 2rem;
-              color: #ffffff;
-              display: none;
-              animation: slideIn 0.3s ease-out;
-              z-index: 3000;
-              border: 1px solid #000000;
-              box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-          }
-
-          @keyframes slideIn {
-              from {
-                  transform: translateX(100%);
-              }
-              to {
-                  transform: translateX(0);
-              }
-          }
-
-          .toast.show {
-              display: block;
-          }
-      </style>
-  </head>
-  <body>
-      <!-- ヘッダー -->
-      <header class="header">
-          <div class="header-content">
-              <div class="logo">Future Letter</div>
-              <nav class="nav-buttons">
-                  <button class="btn" 
-  onclick="showSection('compose')">手紙を書く</button>
-                  <button class="btn" 
-  onclick="showSection('letters')">手紙を読む</button>
-                  <button class="btn" 
-  onclick="showSection('calendar')">カレンダー</button>
-                  <button class="btn" 
-  onclick="showSection('settings')">設定</button>
-              </nav>
-          </div>
-      </header>
-
-      <!-- 通知バー -->
-      <div id="notification-bar" class="notification-bar" 
-  onclick="showTodaysLetters()">
-          <p>今日、未来からの手紙が届いています</p>
-      </div>
-
-      <!-- メインコンテナ -->
-      <main class="container">
-          <!-- 作成セクション -->
-          <section id="compose-section" class="section">
-              <h2 style="text-align: center;">未来への手紙を書く</h2>
-
-              <form class="letter-form" id="letter-form" 
-  onsubmit="saveLetter(event)">
-                  <div id="reply-indicator" class="reply-indicator" 
-  style="display: none;">
-                      <span>💌</span>
-                      <span id="reply-to-text">への返事を書いています</span>
-                  </div>
-
-                  <div class="form-group" id="category-selector-group">
-                      <label 
-  class="form-label">手紙のカテゴリーを選択</label>
-                      <div class="category-selector">
-                          <div class="category-option" 
-  onclick="selectCategory('someday')" data-category="someday">
-                              <div style="font-size: 2rem; margin-bottom: 
-  0.5rem;">🌟</div>
-                              <div style="font-weight: 
-  500;">いつかの自分</div>
-                              <div style="font-size: 0.8rem; color: #666666; 
-  margin-top: 0.5rem;">いつ届くかは秘密です</div>
-                          </div>
-                          <div class="category-option" 
-  onclick="selectCategory('date')" data-category="date">
-                              <div style="font-size: 2rem; margin-bottom: 
-  0.5rem;">📅</div>
-                              <div style="font-weight: 500;">特定の日付</div>
-                              <div style="font-size: 0.8rem; color: #666666; 
-  margin-top: 0.5rem;">決めた日に届く</div>
-                          </div>
-                      </div>
-                  </div>
-
-                  <div id="date-selector" class="form-group" style="display: 
-  none;">
-                      <label class="form-label">配信日を選択</label>
-                      <input type="date" id="delivery-date" 
-  class="form-input">
-                  </div>
-
-                  <div class="form-group">
-                      <label class="form-label">件名（任意）</label>
-                      <input type="text" id="letter-title" class="form-input"
-   placeholder="未来の自分へ...">
-                  </div>
-
-                  <div class="form-group">
-                      <label class="form-label">手紙の内容</label>
-                      <textarea id="letter-content" class="form-textarea" 
-  placeholder="今の気持ち、未来への期待、大切にしたいこと..." 
-  required></textarea>
-                  </div>
-
-                  <div class="form-group">
-                      <label class="form-label">画像を追加（任意）</label>
-                      <div class="image-upload-area" id="image-upload-area" 
-  onclick="document.getElementById('image-input').click()">
-                          <input type="file" id="image-input" 
-  accept="image/*" multiple style="display: none;" 
-  onchange="handleImageSelect(event)">
-                          <div style="font-size: 2rem; margin-bottom: 
-  0.5rem;">📷</div>
-                          <p style="font-size: 0.9rem; line-height: 
-  1.6;">クリックして画像を選択<br>またはドラッグ&ドロップ<br>Ctrl+V /
-  Cmd+Vで貼り付け</p>
-                      </div>
-                      <div class="image-preview-container" 
-  id="image-preview-container"></div>
-                  </div>
-
-                  <div style="display: flex; gap: 1rem; justify-content: 
-  center;">
-                      <button type="submit" class="btn 
-  btn-primary">手紙を送る</button>
-                      <button type="button" class="btn" 
-  onclick="resetForm()">クリア</button>
-                  </div>
-              </form>
-          </section>
-
-          <!-- 手紙一覧セクション -->
-          <section id="letters-section" class="section active">
-              <h2 style="text-align: center;">手紙の一覧</h2>
-
-              <div class="filter-container">
-                  <div class="filter-chip active" data-filter="all" 
-  onclick="filterLetters('all')">届いた手紙</div>
-                  <div class="filter-chip" data-filter="someday" 
-  onclick="filterLetters('someday')">いつかの自分</div>
-                  <div class="filter-chip" data-filter="date" 
-  onclick="filterLetters('date')">特定の日付</div>
-              </div>
-
-              <div class="stats-container">
-                  <div class="stat-card">
-                      <div class="stat-number" id="all-letters">0</div>
-                      <div class="stat-label">書いた手紙の総数</div>
-                  </div>
-                  <div class="stat-card">
-                      <div class="stat-number" id="total-letters">0</div>
-                      <div class="stat-label">届いた手紙</div>
-                  </div>
-                  <div class="stat-card">
-                      <div class="stat-number" id="delivered-letters">0</div>
-                      <div class="stat-label">開封済み</div>
-                  </div>
-                  <div class="stat-card">
-                      <div class="stat-number" id="unopened-letters">0</div>
-                      <div class="stat-label">未開封</div>
-                  </div>
-              </div>
-
-              <div id="letters-grid" class="letters-grid"></div>
-
-              <div id="empty-state" class="empty-state" style="display: 
-  none;">
-                  <div class="empty-state-icon">📭</div>
-                  <h3>まだ手紙がありません</h3>
-                  <p>最初の手紙を書いて、未来の自分との対話を始めましょう</p>
-                  <button class="btn btn-primary" 
-  onclick="showSection('compose')" style="margin-top: 
-  1.5rem;">手紙を書く</button>
-              </div>
-          </section>
-
-          <!-- カレンダーセクション -->
-          <section id="calendar-section" class="section">
-              <h2 style="text-align: center;">カレンダービュー</h2>
-
-              <div class="calendar-container">
-                  <div class="calendar-header">
-                      <button class="btn" 
-  onclick="changeMonth(-1)">←</button>
-                      <h3 id="calendar-month"></h3>
-                      <button class="btn" onclick="changeMonth(1)">→</button>
-                  </div>
-                  <div class="calendar-grid" id="calendar-grid"></div>
-              </div>
-          </section>
-
-          <!-- 設定セクション -->
-          <section id="settings-section" class="section">
-              <h2 style="text-align: center;">設定</h2>
-
-              <div class="data-management">
-                  <h3>データ管理</h3>
-                  <p style="color: #666666; margin-bottom: 
-  1rem;">手紙のデータをバックアップまたは復元します</p>
-                  <div class="data-buttons">
-                      <button class="btn btn-primary" 
-  onclick="exportData()">エクスポート</button>
-                      <input type="file" id="import-file" accept=".json" 
-  style="display: none;" onchange="importData(event)">
-                      <button class="btn" onclick="document.getElementById('i
-  mport-file').click()">インポート</button>
-                  </div>
-
-                  <div style="margin-top: 3rem; padding-top: 2rem; 
-  border-top: 1px solid #000000;">
-                      <h3>データ診断</h3>
-                      <p style="color: #666666; margin-bottom: 
-  1rem;">データの状態を確認・修正します</p>
-                      <div class="data-buttons">
-                          <button class="btn" 
-  onclick="diagnosisData()">データ診断</button>
-                          <button class="btn" 
-  onclick="fixCategoryData()">カテゴリー修正</button>
-                      </div>
-                      <div id="diagnosis-result" style="margin-top: 1rem; 
-  text-align: left; display: none;">
-                          <pre style="background: #f8f8f8; padding: 1rem; 
-  border: 1px solid #000000; overflow-x: auto;"></pre>
-                      </div>
-                  </div>
-              </div>
-          </section>
-      </main>
-
-      <!-- モーダル -->
-      <div id="letter-modal" class="modal" 
-  onclick="closeModalOnBackground(event)">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h3 id="modal-title">手紙の詳細</h3>
-                  <button class="modal-close" 
-  onclick="closeModal()">×</button>
-              </div>
-              <div id="modal-body" class="modal-body"></div>
-          </div>
-      </div>
-
-      <!-- トースト通知 -->
-      <div id="toast" class="toast"></div>
-
-      <!-- 画像モーダル -->
-      <div id="image-modal" class="image-modal" onclick="closeImageModal()">
-          <img id="modal-image" src="" alt="">
-      </div>
-
-      <script>
-          // グローバル変数
-          let letters = [];
-          let selectedCategory = null;
-          let currentFilter = 'all';
-          let currentDate = new Date();
-          let currentMonth = currentDate.getMonth();
-          let currentYear = currentDate.getFullYear();
-          let tempImages = [];
-
-          // HTMLエスケープ関数
-          function escapeHtml(text) {
-              if (typeof text !== 'string') return '';
-              const div = document.createElement('div');
-              div.textContent = text;
-              return div.innerHTML;
-          }
-
-          // 初期化
-          document.addEventListener('DOMContentLoaded', () => {
-              loadLetters();
-              checkTodaysLetters();
-              updateStats();
-              renderCalendar();
-              showSection('letters');
-              setupDragAndDrop();
-              document.addEventListener('paste', handlePaste);
-          });
-
-          // セクション表示
-          function showSection(section) {
-              document.querySelectorAll('.section').forEach(s =>
-  s.classList.remove('active'));
-
-  document.getElementById(`${section}-section`).classList.add('active');
-
-              if (section === 'letters') renderLetters();
-              else if (section === 'calendar') renderCalendar();
-          }
-
-          // カテゴリー選択
-          function selectCategory(category) {
-              selectedCategory = category;
-              document.querySelectorAll('.category-option').forEach(opt =>
-  opt.classList.remove('selected'));
-              document.querySelector(`[data-category="${category}"]`).classLi
-  st.add('selected');
-              document.getElementById('date-selector').style.display =
-  category === 'date' ? 'block' : 'none';
-              if (category === 'date') {
-                  const tomorrow = new Date();
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  document.getElementById('delivery-date').min =
-  tomorrow.toISOString().split('T')[0];
-              }
-          }
-
-          // 手紙の保存
-          function saveLetter(event) {
-              event.preventDefault();
-              if (!selectedCategory) {
-                  showToast('カテゴリーを選択してください');
-                  return;
-              }
-
-              const title = document.getElementById('letter-title').value ||
-  '無題の手紙';
-              const content =
-  document.getElementById('letter-content').value;
-              let deliveryDate = null;
-
-              if (selectedCategory === 'date') {
-                  deliveryDate =
-  document.getElementById('delivery-date').value;
-                  if (!deliveryDate) { showToast('配信日を選択してください');
-   return; }
-              } else if (selectedCategory === 'someday') {
-                  const randomDays = Math.floor(Math.random() * (1095 - 180 +
-   1)) + 180;
-                  const futureDate = new Date();
-                  futureDate.setDate(futureDate.getDate() + randomDays);
-                  deliveryDate = futureDate.toISOString().split('T')[0];
-              }
-
-              const letter = {
-                  id: Date.now().toString(), title, content, category:
-  selectedCategory, deliveryDate,
-                  createdAt: new Date().toISOString(), isRead: false,
-  isOpened: false,
-                  images: [...tempImages], parentLetterId: null, hasReply:
-  false
-              };
-
-              letters.push(letter);
-              saveToLocalStorage();
-              showToast('未来への手紙を送信しました！');
-              resetForm();
-              showSection('letters');
-          }
-
-          // フォームリセット
-          function resetForm() {
-              document.getElementById('letter-form').reset();
-              selectedCategory = null;
-              document.querySelectorAll('.category-option').forEach(opt =>
-  opt.classList.remove('selected'));
-              document.getElementById('date-selector').style.display =
-  'none';
-              tempImages = [];
-              document.getElementById('image-preview-container').innerHTML =
-  '';
-          }
-
-          // LocalStorageへの保存/読込
-          function saveToLocalStorage() {
-              localStorage.setItem('futureLetters', JSON.stringify(letters));
-          }
-
-          function loadLetters() {
-              const saved = localStorage.getItem('futureLetters');
-              if (saved) {
-                  letters = JSON.parse(saved).map(letter => ({
-                      ...letter,
-                      isOpened: letter.isOpened ?? false,
-                      parentLetterId: letter.parentLetterId || null,
-                      hasReply: letter.hasReply ?? false,
-                      isRead: letter.isRead ?? false,
-                      // 
-  カテゴリーがない古いデータの場合、デフォルトでsomedayを設定
-                      category: letter.category || 'someday'
-                  }));
-
-                  // データを修正したので保存し直す
-                  saveToLocalStorage();
-              }
-          }
-
-          // 今日の手紙をチェック
-          function checkTodaysLetters() {
-              const todayStr = new Date().toLocaleDateString('sv-SE');
-              const hasTodaysLetters = letters.some(l => l.deliveryDate &&
-  l.deliveryDate <= todayStr && !l.isRead);
-
-  document.getElementById('notification-bar').classList.toggle('show',
-  hasTodaysLetters);
-          }
-
-          // 手紙の表示
-          function renderLetters() {
-              const grid = document.getElementById('letters-grid');
-              const emptyState = document.getElementById('empty-state');
-              const todayStr = new Date().toLocaleDateString('sv-SE');
-
-              // デバッグ情報を表示
-              console.log('Current filter:', currentFilter);
-              console.log('All letters:', letters.map(l => ({ id: l.id,
-  category: l.category, deliveryDate: l.deliveryDate })));
-
-              let lettersToDisplay;
-              // 未来の手紙は表示しない（配信日前の手紙を除外）
-              const displayableLetters = letters.filter(l => l.deliveryDate
-  && l.deliveryDate <= todayStr);
-
-              console.log('Displayable letters:', displayableLetters.map(l =>
-   ({ id: l.id, category: l.category })));
-
-              if (currentFilter === 'all') {
-                  lettersToDisplay = displayableLetters;
-              } else { // someday or date
-                  // 'specific'も'date'として扱う
-                  if (currentFilter === 'date') {
-                      lettersToDisplay = displayableLetters.filter(l =>
-                          l.category === 'date' || l.category === 'specific'
-  || (!l.category && l.deliveryDate)
-                      );
-                  } else {
-                      lettersToDisplay = displayableLetters.filter(l =>
-  l.category === currentFilter);
-                  }
-                  console.log(`Letters with category '${currentFilter}':`,
-  lettersToDisplay.length);
-              }
-
-              grid.style.display = lettersToDisplay.length > 0 ? 'grid' :
-  'none';
-              emptyState.style.display = lettersToDisplay.length > 0 ? 'none'
-   : 'block';
-              grid.innerHTML = '';
-
-              lettersToDisplay.sort((a,b) => new Date(b.deliveryDate) - new
-  Date(a.deliveryDate));
-
-              lettersToDisplay.forEach(letter => {
-                  const isReply = letter.parentLetterId !== null;
-                  const shouldShowUnopened = !letter.isOpened;
-
-                  const cardDiv = document.createElement('div');
-                  cardDiv.className = `letter-card ${letter.images?.length > 
-  0 ? 'has-images' : ''}`;
-
-                  if (shouldShowUnopened) {
-                      cardDiv.classList.add('unopened');
-                      cardDiv.onclick = () => openLetter(letter.id);
-                      cardDiv.innerHTML = `
-                          <div class="unopened-overlay">
-                              <div class="unopened-icon">💌</div>
-                              <div 
-  class="unopened-text">クリックして開封</div>
-                          </div>
-                          <div style="visibility: hidden; height: 
-  120px;"></div>`;
-                  } else if (isReply) {
-                      cardDiv.onclick = () => openLetter(letter.id);
-                      const deliveryDate = new
-  Date(letter.deliveryDate).toLocaleDateString('ja-JP');
-                      cardDiv.innerHTML = `
-                          <span class="letter-category-badge 
-  ${letter.category}">${getCategoryName(letter.category)}</span>
-                          <div class="letter-date">届いた日: 
-  ${deliveryDate}</div>
-                          <div class="letter-preview" style="margin-top: 
-  1rem; -webkit-line-clamp: 5;">
-                              <span class="letter-reply-badge">返事</span> 
-  ${escapeHtml(letter.content)}
-                          </div>`;
-                  } else { // Opened Original Letter
-                      const deliveryDate = new
-  Date(letter.deliveryDate).toLocaleDateString('ja-JP');
-                      cardDiv.innerHTML = `
-                          <div class="letter-actions">
-                              <button class="btn btn-reply" 
-  data-letter-id="${letter.id}">返事を書く</button>
-                          </div>
-                          <span class="letter-category-badge 
-  ${letter.category}">${getCategoryName(letter.category)}</span>
-                          <div class="letter-date">届いた日: 
-  ${deliveryDate}</div>
-                          <h3 style="margin: 0.5rem 0; font-weight: 
-  500;">${escapeHtml(letter.title)}</h3>
-                          <div class="letter-preview" 
-  style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
-                          ${letter.hasReply ? '<div style="margin-top: 
-  1rem;"><span class="letter-reply-badge">返事あり</span></div>' : ''}`;
-
-                      // Add event listener for reply button
-                      const replyBtn = cardDiv.querySelector('.btn-reply');
-                      if (replyBtn) {
-                          replyBtn.onclick = (e) => {
-                              e.stopPropagation();
-                              openLetter(letter.id, true);
-                          };
-                      }
-
-                      cardDiv.onclick = () => openLetter(letter.id);
-                  }
-
-                  grid.appendChild(cardDiv);
-              });
-          }
-
-          // カテゴリー名取得
-          function getCategoryName(category) {
-              const categoryMap = {
-                  'someday': 'いつかの自分',
-                  'date': '特定の日付',
-                  'specific': '特定の日付'  // 古いデータとの互換性
-              };
-              return categoryMap[category] || '特定の日付';  // 
-  デフォルトは特定の日付
-          }
-
-          // フィルター適用
-          function filterLetters(filter) {
-              currentFilter = filter;
-              document.querySelectorAll('.filter-chip').forEach(chip => {
-                  chip.classList.toggle('active', chip.dataset.filter ===
-  filter);
-              });
-              renderLetters();
-          }
-
-          // 手紙を開く
-          function openLetter(letterId, showReplyForm = false) {
-              const letter = letters.find(l => l.id === letterId);
-              if (!letter) return;
-
-              if (!letter.isOpened) {
-                  letter.isOpened = true;
-                  letter.isRead = true;
-                  saveToLocalStorage();
-                  updateStats();
-                  checkTodaysLetters();
-              }
-
-              const modal = document.getElementById('letter-modal');
-              const modalBody = document.getElementById('modal-body');
-              const modalTitle = document.getElementById('modal-title');
-              modalTitle.textContent = '手紙の詳細';
-
-              const replies = letters.filter(l => l.parentLetterId ===
-  letterId);
-              const parentLetter = letter.parentLetterId ? letters.find(l =>
-  l.id === letter.parentLetterId) : null;
-
-              modalBody.innerHTML = '';
-              const threadContainer = document.createElement('div');
-              threadContainer.className = 'thread-container';
-              if (parentLetter)
-  threadContainer.appendChild(createLetterElementForModal(parentLetter));
-
-  threadContainer.appendChild(createLetterElementForModal(letter));
-              replies.forEach(reply =>
-  threadContainer.appendChild(createLetterElementForModal(reply, true)));
-              modalBody.appendChild(threadContainer);
-
-              const buttonsDiv = document.createElement('div');
-              buttonsDiv.id = 'modal-buttons';
-              buttonsDiv.style.cssText = 'margin-top: 2rem; display: flex; 
-  gap: 1rem; justify-content: flex-end;';
-
-              // 返事を書くボタンを作成（返信でない場合のみ）
-              if (!letter.parentLetterId) {
-                  const replyButton = document.createElement('button');
-                  replyButton.className = 'btn btn-reply';
-                  replyButton.textContent = '返事を書く';
-                  replyButton.onclick = () =>
-  showReplyFormInModal(letter.id);
-                  buttonsDiv.appendChild(replyButton);
-              }
-
-              // 閉じるボタンを作成
-              const closeButton = document.createElement('button');
-              closeButton.className = 'btn btn-primary';
-              closeButton.textContent = '閉じる';
-              closeButton.onclick = () => closeModal();
-              buttonsDiv.appendChild(closeButton);
-
-              modalBody.appendChild(buttonsDiv);
-
-              const replyFormContainer = document.createElement('div');
-              replyFormContainer.id = 'modal-reply-form-container';
-              modalBody.appendChild(replyFormContainer);
-
-              modal.classList.add('show');
-
-              if (showReplyForm) showReplyFormInModal(letterId);
-              if
-  (document.getElementById('letters-section').classList.contains('active'))
-  renderLetters();
-          }
-
-          // モーダル用手紙要素の作成
-          function createLetterElementForModal(letter, isReply = false) {
-              const letterDiv = document.createElement('div');
-              letterDiv.className = `thread-letter ${isReply ? 'reply' : 
-  ''}`;
-              const createdDate = new
-  Date(letter.createdAt).toLocaleDateString('ja-JP');
-              const deliveryDate = letter.deliveryDate ? new
-  Date(letter.deliveryDate).toLocaleDateString('ja-JP') : '';
-              let imagesHtml = '';
-              if (letter.images?.length > 0) {
-                  imagesHtml = `
-                      <div style="margin-top: 2rem; padding-top: 2rem; 
-  border-top: 1px solid #000000;">
-                          <p style="color: #666666; margin-bottom: 1rem; 
-  text-transform: uppercase; font-size: 0.8rem; letter-spacing: 
-  0.1em;">添付画像（${letter.images.length}枚）</p>
-                          <div class="letter-images">${letter.images.map(img 
-  => `<img src="${img}" class="letter-image" 
-  onclick="openImageModal(this.src)">`).join('')}</div>
-                      </div>`;
-              }
-              letterDiv.innerHTML = `
-                  <div style="margin-bottom: 1rem;">
-                      <small style="color: #666666; text-transform: 
-  uppercase; font-size: 0.75rem; letter-spacing: 0.05em;">作成日: 
-  ${createdDate}</small>
-                      ${deliveryDate ? `<br><small style="color: #666666; 
-  text-transform: uppercase; font-size: 0.75rem; letter-spacing: 
-  0.05em;">配信日: ${deliveryDate}</small>` : ''}
-                      ${letter.parentLetterId ? '<br><small style="color: 
-  #000000; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 
-  0.05em;">返事</small>' : ''}
-                  </div>
-                  <h3 style="margin-bottom: 1rem; font-weight: 
-  500;">${escapeHtml(letter.title)}</h3>
-                  <div style="white-space: pre-wrap; line-height: 
-  1.8;">${escapeHtml(letter.content)}</div>
-                  ${imagesHtml}`;
-              return letterDiv;
-          }
-
-          // モーダル内で返信フォーム表示
-          function showReplyFormInModal(letterId) {
-              const parentLetter = letters.find(l => l.id === letterId);
-              if (!parentLetter) return;
-              const container =
-  document.getElementById('modal-reply-form-container');
-              document.getElementById('modal-buttons').style.display =
-  'none';
-
-              // フォームを作成
-              const formDiv = document.createElement('div');
-              formDiv.className = 'letter-form';
-              formDiv.style = 'margin-top: 2rem; border-top: 1px solid 
-  #000000; padding-top: 2rem; background: transparent; box-shadow: none; 
-  padding: 2rem 0 0 0; border-left: none; border-right: none; border-bottom: 
-  none;';
-
-              const heading = document.createElement('h4');
-              heading.style = 'margin-bottom: 1.5rem; font-weight: 500;';
-              heading.textContent = '返事を書く';
-              formDiv.appendChild(heading);
-
-              const form = document.createElement('form');
-              form.onsubmit = (event) => saveReplyFromModal(event, letterId);
-
-              const formGroup = document.createElement('div');
-              formGroup.className = 'form-group';
-
-              const label = document.createElement('label');
-              label.className = 'form-label';
-              label.textContent = '返事の内容';
-              formGroup.appendChild(label);
-
-              const textarea = document.createElement('textarea');
-              textarea.id = 'modal-reply-content';
-              textarea.className = 'form-textarea';
-              textarea.required = true;
-              formGroup.appendChild(textarea);
-
-              form.appendChild(formGroup);
-
-              const buttonDiv = document.createElement('div');
-              buttonDiv.style = 'display: flex; gap: 1rem; justify-content: 
-  flex-end;';
-
-              const cancelButton = document.createElement('button');
-              cancelButton.type = 'button';
-              cancelButton.className = 'btn';
-              cancelButton.textContent = 'キャンセル';
-              cancelButton.onclick = () => hideReplyFormInModal();
-              buttonDiv.appendChild(cancelButton);
-
-              const submitButton = document.createElement('button');
-              submitButton.type = 'submit';
-              submitButton.className = 'btn btn-primary';
-              submitButton.textContent = '返信を送信';
-              buttonDiv.appendChild(submitButton);
-
-              form.appendChild(buttonDiv);
-              formDiv.appendChild(form);
-
-              container.innerHTML = '';
-              container.appendChild(formDiv);
-              container.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          }
-
-          function hideReplyFormInModal() {
-              document.getElementById('modal-reply-form-container').innerHTML
-   = '';
-              document.getElementById('modal-buttons').style.display =
-  'flex';
-          }
-
-          function saveReplyFromModal(event, parentLetterId) {
-              event.preventDefault();
-              const parentLetter = letters.find(l => l.id ===
-  parentLetterId);
-              if (!parentLetter) return;
-
-              const title = `Re: ${parentLetter.title}`;
-              const content =
-  document.getElementById('modal-reply-content').value;
-              const category = parentLetter.category;
-              let deliveryDate = null;
-
-              if (category === 'date') {
-                  // 日付指定の場合は、翌日以降のランダムな日付を設定
-                  const daysToAdd = Math.floor(Math.random() * 30) + 1; // 
-  1〜30日後
-                  const futureDate = new Date();
-                  futureDate.setDate(futureDate.getDate() + daysToAdd);
-                  deliveryDate = futureDate.toISOString().split('T')[0];
-              } else if (category === 'someday') {
-                  // いつかの自分の場合は、親と同様にランダムな日付を設定
-                  const randomDays = Math.floor(Math.random() * (1095 - 180 +
-   1)) + 180;
-                  const futureDate = new Date();
-                  futureDate.setDate(futureDate.getDate() + randomDays);
-                  deliveryDate = futureDate.toISOString().split('T')[0];
-              }
-
-              const replyLetter = {
-                  id: Date.now().toString(), title, content, category,
-  deliveryDate,
-                  createdAt: new Date().toISOString(), isRead: false,
-  isOpened: false,
-                  images: [], parentLetterId, hasReply: false
-              };
-              parentLetter.hasReply = true;
-              letters.push(replyLetter);
-              saveToLocalStorage();
-              showToast('返事を送信しました！');
-              closeModal();
-              renderLetters();
-              updateStats();
-          }
-
-          function closeModal() {
-  document.getElementById('letter-modal').classList.remove('show'); }
-          function closeModalOnBackground(event) { if (event.target.id ===
-  'letter-modal') closeModal(); }
-
-          function showTodaysLetters() {
-              showSection('letters');
-              filterLetters('all');
-              const todayStr = new Date().toLocaleDateString('sv-SE');
-              const firstUnread = letters
-                  .filter(l => l.deliveryDate && l.deliveryDate <= todayStr
-  && !l.isRead)
-                  .sort((a,b) => new Date(a.deliveryDate) - new
-  Date(b.deliveryDate))[0];
-              if(firstUnread) openLetter(firstUnread.id);
-          }
-
-          // 統計情報の更新
-          function updateStats() {
-              const todayStr = new Date().toLocaleDateString('sv-SE');
-              const deliveredLetters = letters.filter(l => l.deliveryDate &&
-  l.deliveryDate <= todayStr);
-              document.getElementById('all-letters').textContent =
-  letters.length;
-              document.getElementById('total-letters').textContent =
-  deliveredLetters.length;
-              document.getElementById('delivered-letters').textContent =
-  deliveredLetters.filter(l => l.isOpened).length;
-              document.getElementById('unopened-letters').textContent =
-  deliveredLetters.filter(l => !l.isOpened).length;
-          }
-
-          // カレンダーの描画
-          function renderCalendar() {
-              const monthNames = ['1月','2月','3月','4月','5月','6月','7月','
-  8月','9月','10月','11月','12月'];
-              document.getElementById('calendar-month').textContent =
-  `${currentYear}年 ${monthNames[currentMonth]}`;
-              const grid = document.getElementById('calendar-grid');
-              grid.innerHTML = '';
-              ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
-                  const header = document.createElement('div');
-                  header.style.cssText = 'text-align: center; font-weight: 
-  500; color: #666666; padding: 1rem; border-right: 1px solid #000000; 
-  border-bottom: 1px solid #000000; text-transform: uppercase; font-size: 
-  0.8rem; letter-spacing: 0.1em;';
-                  header.textContent = day;
-                  grid.appendChild(header);
-              });
-
-              const firstDay = new Date(currentYear, currentMonth,
-  1).getDay();
-              for (let i = 0; i < firstDay; i++) {
-                  const emptyDay = document.createElement('div');
-                  emptyDay.style.cssText = 'border-right: 1px solid #000000; 
-  border-bottom: 1px solid #000000;';
-                  grid.appendChild(emptyDay);
-              }
-
-              const daysInMonth = new Date(currentYear, currentMonth + 1,
-  0).getDate();
-              const todayStr = new Date().toLocaleDateString('sv-SE');
-
-              for (let day = 1; day <= daysInMonth; day++) {
-                  const dayElement = document.createElement('div');
-                  dayElement.className = 'calendar-day';
-                  dayElement.textContent = day;
-                  const dateStr = `${currentYear}-${String(currentMonth + 
-  1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-                  // 今日の日付をハイライト
-                  if (dateStr === todayStr) {
-                      dayElement.classList.add('today');
-                  }
-
-                  // 過去の手紙のみ表示（未来の手紙は表示しない）
-                  if (dateStr <= todayStr && letters.some(l => l.deliveryDate
-   === dateStr)) {
-                      dayElement.classList.add('has-letter');
-                      // 未開封の手紙がある場合は特別な表示
-                      const unopenedCount = letters.filter(l =>
-  l.deliveryDate === dateStr && !l.isOpened).length;
-                      if (unopenedCount > 0) {
-                          dayElement.innerHTML = `${day}<span 
-  style="position: absolute; top: 4px; right: 4px; background: #ffffff; 
-  color: #000000; border: 1px solid #000000; width: 18px; height: 18px; 
-  font-size: 0.65rem; display: flex; align-items: center; justify-content: 
-  center;">${unopenedCount}</span>`;
-                      }
-                  }
-                  // 未来の日付はクリックできないスタイルに
-                  if (dateStr > todayStr) {
-                      dayElement.style.opacity = '0.3';
-                      dayElement.style.cursor = 'default';
-                  }
-
-                  dayElement.onclick = () => showLettersForDate(dateStr);
-                  grid.appendChild(dayElement);
-              }
-          }
-
-          function changeMonth(delta) {
-              currentMonth += delta;
-              if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-              else if (currentMonth > 11) { currentMonth = 0; currentYear++;
-  }
-              renderCalendar();
-          }
-
-          function showLettersForDate(date) {
-              const todayStr = new Date().toLocaleDateString('sv-SE');
-
-              // 未来の日付の場合は何もしない
-              if (date > todayStr) {
-                  return;
-              }
-
-              const dateLetters = letters.filter(l => l.deliveryDate ===
-  date);
-              if (dateLetters.length === 0) {
-                  showToast('この日の手紙はありません');
-                  return;
-              }
-
-              // 最初の手紙を開く
-              openLetter(dateLetters[0].id);
-          }
-
-          // データエクスポート/インポート
-          function exportData() {
-              const dataStr = "data:text/json;charset=utf-8," +
-  encodeURIComponent(JSON.stringify({ version: '1.6', letters }, null, 2));
-              const downloadAnchorNode = document.createElement('a');
-              downloadAnchorNode.setAttribute("href", dataStr);
-              downloadAnchorNode.setAttribute("download",
-  `future-letters-${new Date().toISOString().split('T')[0]}.json`);
-              document.body.appendChild(downloadAnchorNode);
-              downloadAnchorNode.click();
-              downloadAnchorNode.remove();
-              showToast('データをエクスポートしました');
-          }
-
-          function importData(event) {
-              const file = event.target.files[0];
-              if (!file) return;
-              const reader = new FileReader();
-              reader.onload = (e) => {
-                  try {
-                      const data = JSON.parse(e.target.result);
-                      if (data.letters && Array.isArray(data.letters) &&
-  confirm('現在のデータを置き換えますか？')) {
-                          letters = data.letters;
-                          saveToLocalStorage();
-                          showToast('データをインポートしました');
-                          showSection('letters');
-                      }
-                  } catch (error) { showToast('インポートに失敗しました'); }
-              };
-              reader.readAsText(file);
-          }
-
-          // 画像処理
-          function processImages(files) {
-              Array.from(files).forEach(file => {
-                  if (!file.type.startsWith('image/') || file.size > 2 * 1024
-   * 1024) {
-                      showToast('2MB以下の画像ファイルを選択してください');
-                      return;
-                  }
-                  const reader = new FileReader();
-                  reader.onload = e => {
-                      const img = new Image();
-                      img.onload = () => {
-                          const canvas = document.createElement('canvas');
-                          const ctx = canvas.getContext('2d');
-                          const maxWidth = 800;
-                          let { width, height } = img;
-                          if (width > maxWidth) { height = (maxWidth / width)
-   * height; width = maxWidth; }
-                          canvas.width = width; canvas.height = height;
-                          ctx.drawImage(img, 0, 0, width, height);
-                          tempImages.push(canvas.toDataURL('image/jpeg',
-  0.8));
-                          updateImagePreview();
-                      };
-                      img.src = e.target.result;
-                  };
-                  reader.readAsDataURL(file);
-              });
-          }
-          function handleImageSelect(event) {
-  processImages(event.target.files); }
-          function updateImagePreview() {
-              document.getElementById('image-preview-container').innerHTML =
-  tempImages.map((img, index) => `<div class="image-preview"><img 
-  src="${img}"><button class="image-remove-btn" 
-  onclick="removeImage(${index})">×</button></div>`).join('');
-          }
-
-          function removeImage(index) { tempImages.splice(index, 1);
-  updateImagePreview(); }
-
-          function setupDragAndDrop() {
-              const uploadArea =
-  document.getElementById('image-upload-area');
-              uploadArea.addEventListener('dragover', e => {
-  e.preventDefault(); uploadArea.classList.add('dragover'); });
-              uploadArea.addEventListener('dragleave', () =>
-  uploadArea.classList.remove('dragover'));
-              uploadArea.addEventListener('drop', e => { e.preventDefault();
-  uploadArea.classList.remove('dragover');
-  processImages(e.dataTransfer.files); });
-          }
-          function handlePaste(e) {
-              if
-  (!document.getElementById('compose-section').classList.contains('active'))
-  return;
-              const files = Array.from(e.clipboardData.items).filter(item =>
-  item.type.startsWith('image/')).map(item => item.getAsFile());
-              if (files.length > 0) { processImages(files);
-  showToast(`${files.length}枚の画像を貼り付けました`); }
-          }
-          function openImageModal(src) {
-  document.getElementById('modal-image').src = src;
-  document.getElementById('image-modal').classList.add('show'); }
-          function closeImageModal() {
-  document.getElementById('image-modal').classList.remove('show'); }
-
-          // トースト通知
-          function showToast(message) {
-              const toast = document.getElementById('toast');
-              toast.textContent = message;
-              toast.classList.add('show');
-              setTimeout(() => toast.classList.remove('show'), 3000);
-          }
-
-          // データ診断
-          function diagnosisData() {
-              try {
-                  console.log('診断開始...');
-                  const todayStr = new Date().toLocaleDateString('sv-SE');
-                  const deliveredLetters = letters.filter(l => l.deliveryDate
-   && l.deliveryDate <= todayStr);
-
-                  const diagnosis = {
-                      総手紙数: letters.length,
-                      届いた手紙: deliveredLetters.length,
-                      カテゴリー別: {
-                          someday: deliveredLetters.filter(l => l.category
-  === 'someday').length,
-                          date: deliveredLetters.filter(l => l.category ===
-  'date').length,
-                          undefined: deliveredLetters.filter(l =>
-  !l.category).length
-                      },
-                      詳細: deliveredLetters.map(l => ({
-                          id: l.id,
-                          title: (l.title || '').substring(0, 20) + (l.title
-  && l.title.length > 20 ? '...' : ''),
-                          category: l.category || 'undefined',
-                          deliveryDate: l.deliveryDate
-                      }))
-                  };
-
-                  console.log('診断結果:', diagnosis);
-
-                  const resultDiv =
-  document.getElementById('diagnosis-result');
-                  if (resultDiv) {
-                      resultDiv.style.display = 'block';
-                      const preElement = resultDiv.querySelector('pre');
-                      if (preElement) {
-                          preElement.textContent = JSON.stringify(diagnosis,
-  null, 2);
-                      }
-                  }
-              } catch (error) {
-                  console.error('診断エラー:', error);
-                  alert('診断中にエラーが発生しました: ' + error.message);
-              }
-          }
-
-          // カテゴリー修正
-          function fixCategoryData() {
-              if (!confirm('既存の手紙のカテゴリーを推定して修正しますか？\n\
-  n注意：この操作は元に戻せません。先にエクスポートでバックアップを取ることを
-  お勧めします。')) {
-                  return;
-              }
-
-              let fixedCount = 0;
-              letters.forEach(letter => {
-                  // カテゴリーがない手紙、または'specific'の場合
-                  if (!letter.category && letter.deliveryDate) {
-                      // 配信日と作成日の差を計算
-                      const createdDate = new Date(letter.createdAt ||
-  letter.id);
-                      const deliveryDate = new Date(letter.deliveryDate);
-                      const daysDiff = Math.floor((deliveryDate -
-  createdDate) / (1000 * 60 * 60 * 24));
-
-                      // 
-  180日以上の差があれば「いつかの自分」、それ以下なら「特定の日付」と推定
-                      if (daysDiff >= 180) {
-                          letter.category = 'someday';
-                      } else {
-                          letter.category = 'date';
-                      }
-                      fixedCount++;
-                  } else if (letter.category === 'specific') {
-                      // 'specific'を'date'に変換
-                      letter.category = 'date';
-                      fixedCount++;
-                  }
-              });
-
-              saveToLocalStorage();
-              showToast(`${fixedCount}件の手紙のカテゴリーを修正しました`);
-
-              // 診断結果を更新
-              diagnosisData();
-
-              // 手紙一覧を再描画
-              if
-  (document.getElementById('letters-section').classList.contains('active')) {
-                  renderLetters();
-              }
-          }
-
-          // グローバルスコープに公開
-          Object.assign(window, {
-              showSection, selectCategory, saveLetter, resetForm,
-  filterLetters,
-              openLetter, closeModal, closeModalOnBackground,
-              changeMonth, showLettersForDate, exportData, importData,
-  showTodaysLetters,
-              handleImageSelect, removeImage, openImageModal,
-  closeImageModal,
-              showReplyFormInModal, hideReplyFormInModal, saveReplyFromModal,
-              diagnosisData, fixCategoryData
-          });
-      </script>
-  </body>
-  </html>
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future Letter - 未来の自分への日記</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* ヘッダー */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* 通知バー */
+        .notification-bar {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .notification-bar.show {
+            display: block;
+        }
+
+        /* ボタン */
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reply {
+            background: linear-gradient(45deg, #48bb78 0%, #38a169 100%);
+            border: none;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-reply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        /* メインコンテナ */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* セクション */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* フォーム */
+        .letter-form {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 返事フォーム用のスタイル */
+        .reply-indicator {
+            background: linear-gradient(45deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 画像アップロードエリア */
+        .image-upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .image-upload-area:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .image-upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .image-preview {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .image-remove-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 59, 48, 1);
+        }
+
+        /* 手紙内の画像表示 */
+        .letter-images {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .letter-image {
+            max-width: 100%;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .letter-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 画像モーダル */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            cursor: pointer;
+        }
+
+        .image-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #b8b8b8;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        /* カテゴリー選択 */
+        .category-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-option {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .category-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .category-option.selected {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        /* 手紙グリッド */
+        .letters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .letter-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .letter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .letter-content {
+            flex-grow: 1;
+        }
+
+        .letter-card.future-locked {
+            border-color: rgba(102, 126, 234, 0.3);
+            cursor: default;
+        }
+
+        .letter-card.has-images::after {
+            content: '📷';
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+
+        .letter-card.unopened {
+            position: relative;
+        }
+
+        .unopened-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(20, 20, 40, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .unopened-overlay:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .unopened-icon {
+            font-size: 3rem;
+            animation: shake 2s ease-in-out infinite;
+        }
+
+        .unopened-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .letter-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .letter-date {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .letter-preview {
+            color: #e0e0e0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .letter-category {
+            font-size: 0.8rem;
+            color: #667eea;
+            margin-top: 0.5rem;
+        }
+
+        .letter-reply-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            margin-right: 0.5rem;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(36, 36, 62, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #667eea;
+            transform: rotate(90deg);
+        }
+
+        /* スレッド表示 */
+        .thread-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .thread-letter {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid rgba(102, 126, 234, 0.5);
+        }
+
+        .thread-letter.reply {
+            border-left-color: rgba(72, 187, 120, 0.8);
+            margin-left: 2rem;
+        }
+
+        .thread-connector {
+            width: 2px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-left: 2rem;
+        }
+
+        /* カレンダー */
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-size: 1rem;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .calendar-day.has-letter {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+        }
+
+        .calendar-day.today {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        /* フィルター */
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-chip {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-chip:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-chip.active {
+            background: rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        /* 統計情報 */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* エクスポート/インポート */
+        .data-management {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .data-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
+
+            .category-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .letters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-container {
+                justify-content: flex-start;
+            }
+            
+            .image-preview {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .letter-image {
+                max-width: 100% !important;
+            }
+
+            .thread-letter.reply {
+                margin-left: 1rem;
+            }
+            
+            .calendar-day {
+                font-size: 0.85rem;
+            }
+            
+            .calendar-day span {
+                width: 16px !important;
+                height: 16px !important;
+                font-size: 0.65rem !important;
+            }
+        }
+
+        /* ローディング */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 空状態 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* トースト通知 */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(102, 126, 234, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            color: white;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+            z-index: 3000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .toast.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">✨ Future Letter</div>
+            <nav class="nav-buttons">
+                <button class="btn" onclick="showSection('compose')">手紙を書く</button>
+                <button class="btn" onclick="showSection('letters')">手紙を読む</button>
+                <button class="btn" onclick="showSection('calendar')">カレンダー</button>
+                <button class="btn" onclick="showSection('settings')">設定</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 通知バー -->
+    <div id="notification-bar" class="notification-bar" onclick="showTodaysLetters()" style="cursor: pointer;">
+        <p>🎉 今日、未来からの手紙が届いています！</p>
+    </div>
+
+    <!-- メインコンテナ -->
+    <main class="container">
+        <!-- 作成セクション -->
+        <section id="compose-section" class="section">
+            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">未来への手紙を書く</h2>
+            
+            <form class="letter-form" id="letter-form" onsubmit="saveLetter(event)">
+                <div id="reply-indicator" class="reply-indicator" style="display: none;">
+                    <span>💌</span>
+                    <span id="reply-to-text">への返事を書いています</span>
+                </div>
+
+                <div class="form-group" id="category-selector-group">
+                    <label class="form-label">手紙のカテゴリーを選択</label>
+                    <div class="category-selector">
+                        <div class="category-option" onclick="selectCategory('someday')" data-category="someday">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌟</div>
+                            <div style="font-weight: bold;">いつかの自分</div>
+                            <div style="font-size: 0.8rem; color: #888;">いつ届くかは秘密です</div>
+                        </div>
+                        <div class="category-option" onclick="selectCategory('date')" data-category="date">
+                            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
+                            <div style="font-weight: bold;">特定の日付</div>
+                            <div style="font-size: 0.8rem; color: #888;">決めた日に届く</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="date-selector" class="form-group" style="display: none;">
+                    <label class="form-label">配信日を選択</label>
+                    <input type="date" id="delivery-date" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">件名（任意）</label>
+                    <input type="text" id="letter-title" class="form-input" placeholder="未来の自分へ...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">手紙の内容</label>
+                    <textarea id="letter-content" class="form-textarea" placeholder="今の気持ち、未来への期待、大切にしたいこと..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">画像を追加（任意）</label>
+                    <div class="image-upload-area" id="image-upload-area" onclick="document.getElementById('image-input').click()">
+                        <input type="file" id="image-input" accept="image/*" multiple style="display: none;" onchange="handleImageSelect(event)">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                        <p>クリックして画像を選択<br>またはドラッグ&ドロップ<br>Ctrl+V / Cmd+Vで貼り付け</p>
+                    </div>
+                    <div class="image-preview-container" id="image-preview-container"></div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button type="submit" class="btn btn-primary">手紙を送る</button>
+                    <button type="button" class="btn" onclick="resetForm()">クリア</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 手紙一覧セクション -->
+        <section id="letters-section" class="section active">
+            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">手紙の一覧</h2>
+            
+            <div class="filter-container">
+                <div class="filter-chip active" data-filter="all" onclick="filterLetters('all')">届いた手紙</div>
+                <div class="filter-chip" data-filter="someday" onclick="filterLetters('someday')">いつかの自分</div>
+                <div class="filter-chip" data-filter="date" onclick="filterLetters('date')">特定の日付</div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-letters">0</div>
+                    <div class="stat-label">届いた手紙の総数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="delivered-letters">0</div>
+                    <div class="stat-label">開封済みの手紙</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="unopened-letters">0</div>
+                    <div class="stat-label">未開封の手紙</div>
+                </div>
+            </div>
+
+            <div id="letters-grid" class="letters-grid"></div>
+
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">📭</div>
+                <h3>まだ手紙がありません</h3>
+                <p>最初の手紙を書いて、未来の自分との対話を始めましょう</p>
+                <button class="btn btn-primary" onclick="showSection('compose')" style="margin-top: 1rem;">手紙を書く</button>
+            </div>
+        </section>
+
+        <!-- カレンダーセクション -->
+        <section id="calendar-section" class="section">
+            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">カレンダービュー</h2>
+            
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="btn" onclick="changeMonth(-1)">←</button>
+                    <h3 id="calendar-month"></h3>
+                    <button class="btn" onclick="changeMonth(1)">→</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+        </section>
+
+        <!-- 設定セクション -->
+        <section id="settings-section" class="section">
+            <h2 style="text-align: center; margin-bottom: 2rem; font-size: 2rem;">設定</h2>
+            
+            <div class="data-management">
+                <h3 style="margin-bottom: 1rem;">データ管理</h3>
+                <p style="color: #888; margin-bottom: 1rem;">手紙のデータをバックアップまたは復元します</p>
+                <div class="data-buttons">
+                    <button class="btn btn-primary" onclick="exportData()">データをエクスポート</button>
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                    <button class="btn" onclick="document.getElementById('import-file').click()">データをインポート</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- モーダル -->
+    <div id="letter-modal" class="modal" onclick="closeModalOnBackground(event)">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">手紙の詳細</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 画像モーダル -->
+    <div id="image-modal" class="image-modal" onclick="closeImageModal()">
+        <img id="modal-image" src="" alt="">
+    </div>
+
+    <script>
+        // グローバル変数
+        let letters = [];
+        let selectedCategory = null;
+        let currentFilter = 'all';
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+        let tempImages = [];
+
+        // HTMLエスケープ関数
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLetters();
+            checkTodaysLetters();
+            updateStats();
+            renderCalendar();
+            showSection('letters');
+            setupDragAndDrop();
+            document.addEventListener('paste', handlePaste);
+        });
+
+        // セクション表示
+        function showSection(section) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${section}-section`).classList.add('active');
+            
+            if (section === 'letters') renderLetters();
+            else if (section === 'calendar') renderCalendar();
+        }
+
+        // カテゴリー選択
+        function selectCategory(category) {
+            selectedCategory = category;
+            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector(`[data-category="${category}"]`).classList.add('selected');
+            document.getElementById('date-selector').style.display = category === 'date' ? 'block' : 'none';
+            if (category === 'date') {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('delivery-date').min = tomorrow.toISOString().split('T')[0];
+            }
+        }
+
+        // 手紙の保存
+        function saveLetter(event) {
+            event.preventDefault();
+            if (!selectedCategory) {
+                showToast('カテゴリーを選択してください');
+                return;
+            }
+            
+            const title = document.getElementById('letter-title').value || '無題の手紙';
+            const content = document.getElementById('letter-content').value;
+            let deliveryDate = null;
+            
+            if (selectedCategory === 'date') {
+                deliveryDate = document.getElementById('delivery-date').value;
+                if (!deliveryDate) { showToast('配信日を選択してください'); return; }
+            } else if (selectedCategory === 'someday') {
+                const randomDays = Math.floor(Math.random() * (1095 - 180 + 1)) + 180;
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + randomDays);
+                deliveryDate = futureDate.toISOString().split('T')[0];
+            }
+            
+            const letter = {
+                id: Date.now().toString(), title, content, category: selectedCategory, deliveryDate,
+                createdAt: new Date().toISOString(), isRead: false, isOpened: false,
+                images: [...tempImages], parentLetterId: null, hasReply: false
+            };
+            
+            letters.push(letter);
+            saveToLocalStorage();
+            showToast('未来への手紙を送信しました！');
+            resetForm();
+            showSection('letters');
+        }
+
+        // フォームリセット
+        function resetForm() {
+            document.getElementById('letter-form').reset();
+            selectedCategory = null;
+            document.querySelectorAll('.category-option').forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('date-selector').style.display = 'none';
+            tempImages = [];
+            document.getElementById('image-preview-container').innerHTML = '';
+        }
+
+        // LocalStorageへの保存/読込
+        function saveToLocalStorage() {
+            localStorage.setItem('futureLetters', JSON.stringify(letters));
+        }
+
+        function loadLetters() {
+            const saved = localStorage.getItem('futureLetters');
+            if (saved) {
+                letters = JSON.parse(saved).map(letter => ({
+                    ...letter, isOpened: letter.isOpened ?? false,
+                    parentLetterId: letter.parentLetterId || null,
+                    hasReply: letter.hasReply ?? false,
+                    isRead: letter.isRead ?? false,
+                }));
+            }
+        }
+
+        // 今日の手紙をチェック
+        function checkTodaysLetters() {
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const hasTodaysLetters = letters.some(l => l.deliveryDate && l.deliveryDate <= todayStr && !l.isRead);
+            document.getElementById('notification-bar').classList.toggle('show', hasTodaysLetters);
+        }
+
+        // 手紙の表示
+        function renderLetters() {
+            const grid = document.getElementById('letters-grid');
+            const emptyState = document.getElementById('empty-state');
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+
+            let lettersToDisplay;
+            // 未来の手紙は表示しない（配信日前の手紙を除外）
+            const displayableLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
+            
+            if (currentFilter === 'all') {
+                lettersToDisplay = displayableLetters;
+            } else { // someday or date
+                lettersToDisplay = displayableLetters.filter(l => l.category === currentFilter);
+            }
+            
+            grid.style.display = lettersToDisplay.length > 0 ? 'grid' : 'none';
+            emptyState.style.display = lettersToDisplay.length > 0 ? 'none' : 'block';
+            grid.innerHTML = '';
+            
+            lettersToDisplay.sort((a,b) => new Date(b.deliveryDate) - new Date(a.deliveryDate));
+
+            lettersToDisplay.forEach(letter => {
+                const isReply = letter.parentLetterId !== null;
+                const shouldShowUnopened = !letter.isOpened;
+
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `letter-card ${letter.images?.length > 0 ? 'has-images' : ''}`;
+                
+                let contentHtml = '';
+                
+                if (shouldShowUnopened) {
+                    cardDiv.classList.add('unopened');
+                    cardDiv.onclick = () => openLetter(letter.id);
+                    contentHtml = `
+                        <div class="unopened-overlay">
+                            <div class="unopened-icon">💌</div>
+                            <div class="unopened-text">クリックして開封</div>
+                        </div>
+                        <div style="visibility: hidden; height: 120px;"></div>`;
+                } else if (isReply) {
+                    cardDiv.onclick = () => openLetter(letter.id);
+                    const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
+                    contentHtml = `
+                        <div class="letter-date">届いた日: ${deliveryDate}</div>
+                        <div class="letter-preview" style="margin-top: 1rem; -webkit-line-clamp: 5;">
+                            <span class="letter-reply-badge">返事</span> ${escapeHtml(letter.content)}
+                        </div>`;
+                } else { // Opened Original Letter
+                    cardDiv.onclick = () => openLetter(letter.id);
+                    // 返事を書くボタンのデータ属性を設定
+                    cardDiv.dataset.letterId = letter.id;
+                    const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
+                    contentHtml = `
+                        <div class="letter-actions"><button class="btn btn-reply reply-btn" data-letter-id="${letter.id}">返事を書く</button></div>
+                        <div class="letter-date">届いた日: ${deliveryDate}</div>
+                        <h3 style="margin: 0.5rem 0;">${escapeHtml(letter.title)}</h3>
+                        <div class="letter-preview" style="-webkit-line-clamp: 4;">${escapeHtml(letter.content)}</div>
+                        ${letter.hasReply ? '<span class="letter-reply-badge" style="position: absolute; bottom: 1.5rem; left: 1.5rem;">返事あり</span>' : ''}`;
+                }
+                cardDiv.innerHTML = contentHtml;
+                grid.appendChild(cardDiv);
+            });
+
+            // 返事を書くボタンにイベントリスナーを追加
+            document.querySelectorAll('.reply-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const letterId = e.target.dataset.letterId;
+                    openLetter(letterId, true);
+                });
+            });
+        }
+
+        // カテゴリー名取得
+        function getCategoryName(category) {
+            return { 'someday': 'いつかの自分', 'date': '特定の日付' }[category] || category;
+        }
+
+        // フィルター適用
+        function filterLetters(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(chip => {
+                chip.classList.toggle('active', chip.dataset.filter === filter);
+            });
+            renderLetters();
+        }
+
+        // 手紙を開く
+        function openLetter(letterId, showReplyForm = false) {
+            const letter = letters.find(l => l.id === letterId);
+            if (!letter) return;
+            
+            if (!letter.isOpened) {
+                letter.isOpened = true;
+                letter.isRead = true;
+                saveToLocalStorage();
+                updateStats();
+                checkTodaysLetters();
+            }
+
+            const modal = document.getElementById('letter-modal');
+            const modalBody = document.getElementById('modal-body');
+            const modalTitle = document.getElementById('modal-title'); // 修正: modalTitleの定義を追加
+            modalTitle.textContent = '手紙の詳細';
+            
+            const replies = letters.filter(l => l.parentLetterId === letterId);
+            const parentLetter = letter.parentLetterId ? letters.find(l => l.id === letter.parentLetterId) : null;
+            
+            modalBody.innerHTML = '';
+            const threadContainer = document.createElement('div');
+            threadContainer.className = 'thread-container';
+            if (parentLetter) threadContainer.appendChild(createLetterElementForModal(parentLetter));
+            threadContainer.appendChild(createLetterElementForModal(letter));
+            replies.forEach(reply => threadContainer.appendChild(createLetterElementForModal(reply, true)));
+            modalBody.appendChild(threadContainer);
+
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.id = 'modal-buttons';
+            buttonsDiv.style.cssText = 'margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;';
+            buttonsDiv.innerHTML = `
+                ${!letter.parentLetterId ? `<button class="btn btn-reply" onclick="showReplyFormInModal('${letter.id}')">返事を書く</button>` : ''}
+                <button class="btn" onclick="deleteLetter('${letter.id}')" style="background: rgba(255, 59, 48, 0.8); margin-right: auto;">削除</button>
+                <button class="btn btn-primary" onclick="closeModal()">閉じる</button>
+            `;
+            modalBody.appendChild(buttonsDiv);
+
+            const replyFormContainer = document.createElement('div');
+            replyFormContainer.id = 'modal-reply-form-container';
+            modalBody.appendChild(replyFormContainer);
+
+            modal.classList.add('show');
+            
+            if (showReplyForm) showReplyFormInModal(letterId);
+            if (document.getElementById('letters-section').classList.contains('active')) renderLetters();
+        }
+
+        // モーダル用手紙要素の作成
+        function createLetterElementForModal(letter, isReply = false) {
+            const letterDiv = document.createElement('div');
+            letterDiv.className = `thread-letter ${isReply ? 'reply' : ''}`;
+            const createdDate = new Date(letter.createdAt).toLocaleDateString('ja-JP');
+            const deliveryDate = letter.deliveryDate ? new Date(letter.deliveryDate).toLocaleDateString('ja-JP') : '';
+            let imagesHtml = '';
+            if (letter.images?.length > 0) {
+                imagesHtml = `
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <p style="color: #888; margin-bottom: 1rem;">📷 添付画像（${letter.images.length}枚）</p>
+                        <div class="letter-images">${letter.images.map(img => `<img src="${img}" class="letter-image" onclick="openImageModal(this.src)">`).join('')}</div>
+                    </div>`;
+            }
+            letterDiv.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <small style="color: #888;">作成日: ${createdDate}</small>
+                    ${deliveryDate ? `<br><small style="color: #888;">配信日: ${deliveryDate}</small>` : ''}
+                    ${letter.parentLetterId ? '<br><small style="color: #48bb78;">返事</small>' : ''}
+                </div>
+                <h3 style="margin-bottom: 1rem;">${escapeHtml(letter.title)}</h3>
+                <div style="white-space: pre-wrap; line-height: 1.8;">${escapeHtml(letter.content)}</div>
+                ${imagesHtml}`;
+            return letterDiv;
+        }
+        
+        // モーダル内で返信フォーム表示
+        function showReplyFormInModal(letterId) {
+            const parentLetter = letters.find(l => l.id === letterId);
+            if (!parentLetter) return;
+            const container = document.getElementById('modal-reply-form-container');
+            document.getElementById('modal-buttons').style.display = 'none';
+
+            container.innerHTML = `
+                <div class="letter-form" style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; background: transparent; backdrop-filter: none; box-shadow: none; padding: 2rem 0 0 0;">
+                    <h4 style="margin-bottom: 1.5rem;">返事を書く</h4>
+                    <form onsubmit="saveReplyFromModal(event, '${letterId}')">
+                        <div class="form-group"><label class="form-label">返事の内容</label><textarea id="modal-reply-content" class="form-textarea" required></textarea></div>
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn" onclick="hideReplyFormInModal()">キャンセル</button>
+                            <button type="submit" class="btn btn-primary">返信を送信</button>
+                        </div>
+                    </form>
+                </div>`;
+            container.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+        
+        function hideReplyFormInModal() {
+            document.getElementById('modal-reply-form-container').innerHTML = '';
+            document.getElementById('modal-buttons').style.display = 'flex';
+        }
+
+        function saveReplyFromModal(event, parentLetterId) {
+            event.preventDefault();
+            const parentLetter = letters.find(l => l.id === parentLetterId);
+            if (!parentLetter) return;
+
+            const title = `Re: ${parentLetter.title}`;
+            const content = document.getElementById('modal-reply-content').value;
+            const category = parentLetter.category;
+            let deliveryDate = null;
+
+            if (category === 'date') {
+                // 日付指定の場合は、翌日以降のランダムな日付を設定
+                const daysToAdd = Math.floor(Math.random() * 30) + 1; // 1〜30日後
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + daysToAdd);
+                deliveryDate = futureDate.toISOString().split('T')[0];
+            } else if (category === 'someday') {
+                // いつかの自分の場合は、親と同様にランダムな日付を設定
+                const randomDays = Math.floor(Math.random() * (1095 - 180 + 1)) + 180;
+                const futureDate = new Date();
+                futureDate.setDate(futureDate.getDate() + randomDays);
+                deliveryDate = futureDate.toISOString().split('T')[0];
+            }
+
+            const replyLetter = {
+                id: Date.now().toString(), title, content, category, deliveryDate,
+                createdAt: new Date().toISOString(), isRead: false, isOpened: false,
+                images: [], parentLetterId, hasReply: false
+            };
+            parentLetter.hasReply = true;
+            letters.push(replyLetter);
+            saveToLocalStorage();
+            showToast('返事を送信しました！');
+            closeModal();
+            renderLetters();
+            updateStats();
+        }
+
+        function closeModal() { document.getElementById('letter-modal').classList.remove('show'); }
+        function closeModalOnBackground(event) { if (event.target.id === 'letter-modal') closeModal(); }
+
+        function deleteLetter(letterId) {
+            const letterToDelete = letters.find(l => l.id === letterId);
+            const confirmMessage = letterToDelete.parentLetterId 
+                ? 'この返事を削除しますか？'
+                : 'この手紙と関連する返事をすべて削除しますか？';
+
+            if (confirm(confirmMessage)) {
+                const deleteIds = [letterId, ...letters.filter(l => l.parentLetterId === letterId).map(r => r.id)];
+                const parentId = letterToDelete?.parentLetterId;
+
+                letters = letters.filter(l => !deleteIds.includes(l.id));
+                
+                if (parentId) {
+                    const parentLetter = letters.find(l => l.id === parentId);
+                    if (parentLetter) parentLetter.hasReply = letters.some(l => l.parentLetterId === parentId);
+                }
+                
+                saveToLocalStorage();
+                showToast('手紙を削除しました');
+                closeModal();
+                renderLetters();
+                updateStats();
+                checkTodaysLetters();
+            }
+        }
+
+        function showTodaysLetters() {
+            showSection('letters');
+            filterLetters('all');
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const firstUnread = letters
+                .filter(l => l.deliveryDate && l.deliveryDate <= todayStr && !l.isRead)
+                .sort((a,b) => new Date(a.deliveryDate) - new Date(b.deliveryDate))[0];
+            if(firstUnread) openLetter(firstUnread.id);
+        }
+
+        // 統計情報の更新
+        function updateStats() {
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            const deliveredLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
+            document.getElementById('total-letters').textContent = deliveredLetters.length;
+            document.getElementById('delivered-letters').textContent = deliveredLetters.filter(l => l.isOpened).length;
+            document.getElementById('unopened-letters').textContent = deliveredLetters.filter(l => !l.isOpened).length;
+        }
+
+        // カレンダーの描画
+        function renderCalendar() {
+            const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            document.getElementById('calendar-month').textContent = `${currentYear}年 ${monthNames[currentMonth]}`;
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            ['日', '月', '火', '水', '木', '金', '土'].forEach(day => {
+                const header = document.createElement('div');
+                header.style.cssText = 'text-align: center; font-weight: bold; color: #888;';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+            
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                // 今日の日付をハイライト
+                if (dateStr === todayStr) {
+                    dayElement.classList.add('today');
+                }
+                
+                // 過去の手紙のみ表示（未来の手紙は表示しない）
+                if (dateStr <= todayStr && letters.some(l => l.deliveryDate === dateStr)) {
+                    dayElement.classList.add('has-letter');
+                    // 未開封の手紙がある場合は特別な表示
+                    const unopenedCount = letters.filter(l => l.deliveryDate === dateStr && !l.isOpened).length;
+                    if (unopenedCount > 0) {
+                        dayElement.innerHTML = `${day}<span style="position: absolute; top: 2px; right: 2px; background: #667eea; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center;">${unopenedCount}</span>`;
+                    }
+                }
+                // 未来の日付はクリックできないスタイルに
+                if (dateStr > todayStr) {
+                    dayElement.style.opacity = '0.5';
+                    dayElement.style.cursor = 'default';
+                }
+                
+                dayElement.onclick = () => showLettersForDate(dateStr);
+                grid.appendChild(dayElement);
+            }
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCalendar();
+        }
+
+        function showLettersForDate(date) {
+            const todayStr = new Date().toLocaleDateString('sv-SE');
+            
+            // 未来の日付の場合は何もしない
+            if (date > todayStr) {
+                return;
+            }
+            
+            const dateLetters = letters.filter(l => l.deliveryDate === date);
+            if (dateLetters.length === 0) {
+                showToast('この日の手紙はありません');
+                return;
+            }
+
+            // 最初の手紙を開く
+            openLetter(dateLetters[0].id);
+        }
+
+        // データエクスポート/インポート
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: '1.6', letters }, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `future-letters-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast('データをエクスポートしました');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.letters && Array.isArray(data.letters) && confirm('現在のデータを置き換えますか？')) {
+                        letters = data.letters;
+                        saveToLocalStorage();
+                        showToast('データをインポートしました');
+                        showSection('letters');
+                    }
+                } catch (error) { showToast('インポートに失敗しました'); }
+            };
+            reader.readAsText(file);
+        }
+
+        // 画像処理
+        function processImages(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/') || file.size > 2 * 1024 * 1024) {
+                    showToast('2MB以下の画像ファイルを選択してください');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxWidth = 800;
+                        let { width, height } = img;
+                        if (width > maxWidth) { height = (maxWidth / width) * height; width = maxWidth; }
+                        canvas.width = width; canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        tempImages.push(canvas.toDataURL('image/jpeg', 0.8));
+                        updateImagePreview();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        function handleImageSelect(event) { processImages(event.target.files); }
+        function updateImagePreview() {
+            document.getElementById('image-preview-container').innerHTML = tempImages.map((img, index) => `<div class="image-preview"><img src="${img}"><button class="image-remove-btn" onclick="removeImage(${index})">×</button></div>`).join('');
+        }
+        
+        function removeImage(index) { tempImages.splice(index, 1); updateImagePreview(); }
+        
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('image-upload-area');
+            uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+            uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+            uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); processImages(e.dataTransfer.files); });
+        }
+        function handlePaste(e) {
+            if (!document.getElementById('compose-section').classList.contains('active')) return;
+            const files = Array.from(e.clipboardData.items).filter(item => item.type.startsWith('image/')).map(item => item.getAsFile());
+            if (files.length > 0) { processImages(files); showToast(`${files.length}枚の画像を貼り付けました`); }
+        }
+        function openImageModal(src) { document.getElementById('modal-image').src = src; document.getElementById('image-modal').classList.add('show'); }
+        function closeImageModal() { document.getElementById('image-modal').classList.remove('show'); }
+
+        // トースト通知
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // グローバルスコープに公開
+        Object.assign(window, {
+            showSection, selectCategory, saveLetter, resetForm, filterLetters,
+            openLetter, deleteLetter, closeModal, closeModalOnBackground,
+            changeMonth, showLettersForDate, exportData, importData, showTodaysLetters,
+            handleImageSelect, removeImage, openImageModal, closeImageModal, 
+            showReplyFormInModal, hideReplyFormInModal, saveReplyFromModal
+        });
+    </script>
+</body>
+</html>

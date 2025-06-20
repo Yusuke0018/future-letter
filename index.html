@@ -513,6 +513,10 @@
             <h2 class="section-title">手紙の一覧</h2>
             <div class="stats-container">
                 <div class="stat-card">
+                    <div class="stat-number" id="written-letters">0</div>
+                    <div class="stat-label">書いた手紙</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-number" id="total-letters">0</div>
                     <div class="stat-label">届いた手紙</div>
                 </div>
@@ -979,6 +983,7 @@
         function updateStats() {
             const todayStr = new Date().toISOString().split('T')[0];
             const deliveredLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
+            document.getElementById('written-letters').textContent = letters.length;
             document.getElementById('total-letters').textContent = deliveredLetters.length;
             document.getElementById('delivered-letters').textContent = deliveredLetters.filter(l => l.isOpened).length;
             document.getElementById('unopened-letters').textContent = deliveredLetters.filter(l => !l.isOpened).length;

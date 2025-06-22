@@ -774,23 +774,26 @@
             cardDiv.className = 'letter-card';
             cardDiv.onclick = () => openLetter(letter.id);
 
+            const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
+            const createdDate = letter.createdAt ? new Date(letter.createdAt).toLocaleDateString('ja-JP') : '';
+
             if (!letter.isOpened) {
                 cardDiv.classList.add('unopened');
                 cardDiv.innerHTML = `
                     <div class="unopened-overlay">
                         <div class="unopened-icon">💌</div>
                         <div class="unopened-text">未来からの手紙</div>
+                        <div class="letter-date">書いた日: ${createdDate}<br>届いた日: ${deliveryDate}</div>
                         <small style="color: var(--muted-color)">クリックして開封</small>
                     </div>
                 `;
             } else {
-                const deliveryDate = new Date(letter.deliveryDate).toLocaleDateString('ja-JP');
                 cardDiv.innerHTML = `
                     <div class="letter-actions">
                          <button class="btn btn-reply reply-btn" onclick="event.stopPropagation(); showReplyFormInModal('${letter.id}')">返事を書く</button>
                     </div>
                     <div class="letter-content">
-                        <div class="letter-date">届いた日: ${deliveryDate}</div>
+                        <div class="letter-date">書いた日: ${createdDate}<br>届いた日: ${deliveryDate}</div>
                         <h3 style="margin: 0.25rem 0 0.5rem;">${escapeHtml(letter.title)}</h3>
                         ${letter.hasReply ? '<span class="letter-reply-badge">返信あり</span>' : ''}
                         <p class="letter-preview">${escapeHtml(letter.content)}</p>

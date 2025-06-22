@@ -608,6 +608,12 @@
             return div.innerHTML;
         }
 
+        // --- 日付フォーマット (ローカルタイム) ---
+        function formatDate(date = new Date()) {
+            const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+            return local.toISOString().split('T')[0];
+        }
+
         // --- 初期化処理 ---
         document.addEventListener('DOMContentLoaded', () => {
             loadLetters();
@@ -637,7 +643,7 @@
             if (category === 'date') {
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                document.getElementById('delivery-date').min = tomorrow.toISOString().split('T')[0];
+                document.getElementById('delivery-date').min = formatDate(tomorrow);
             }
         }
 
@@ -664,7 +670,7 @@
                 const randomDays = Math.floor(Math.random() * (365 - 30 + 1)) + 30; // 30日〜1年後
                 const futureDate = new Date();
                 futureDate.setDate(futureDate.getDate() + randomDays);
-                deliveryDate = futureDate.toISOString().split('T')[0];
+                deliveryDate = formatDate(futureDate);
             } else if (category === 'date') {
                 deliveryDate = document.getElementById('delivery-date').value;
                 if (!deliveryDate) { showToast('配信日を選択してください'); return; }
@@ -672,7 +678,7 @@
                 const randomDays = Math.floor(Math.random() * (1095 - 180 + 1)) + 180; // 6ヶ月〜3年後
                 const futureDate = new Date();
                 futureDate.setDate(futureDate.getDate() + randomDays);
-                deliveryDate = futureDate.toISOString().split('T')[0];
+                deliveryDate = formatDate(futureDate);
             }
             
             const letter = {
@@ -732,7 +738,7 @@
         
         // --- 手紙の表示ロジック ---
         function checkTodaysLetters() {
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = formatDate();
             const hasTodaysLetters = letters.some(l => l.deliveryDate && l.deliveryDate <= todayStr && !l.isRead);
             document.getElementById('notification-bar').classList.toggle('show', hasTodaysLetters);
         }
@@ -740,7 +746,7 @@
         function renderLetters() {
             const grid = document.getElementById('letters-grid');
             const emptyState = document.getElementById('empty-state');
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = formatDate();
             
             const deliverableLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
             let lettersToDisplay;
@@ -804,7 +810,7 @@
         function showTodaysLetters() {
             showSection('letters');
             filterLetters('all');
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = formatDate();
             const firstUnread = letters
                 .filter(l => l.deliveryDate && l.deliveryDate <= todayStr && !l.isRead)
                 .sort((a,b) => new Date(a.deliveryDate) - new Date(b.deliveryDate))[0];
@@ -937,7 +943,7 @@
             const randomDays = Math.floor(Math.random() * (365 - 30 + 1)) + 30; // 30日〜1年後
             const futureDate = new Date();
             futureDate.setDate(futureDate.getDate() + randomDays);
-            const deliveryDate = futureDate.toISOString().split('T')[0];
+            const deliveryDate = formatDate(futureDate);
 
             const replyLetter = {
                 id: Date.now().toString(), title, content, category: parentLetter.category, deliveryDate,
@@ -981,7 +987,7 @@
 
         // --- 統計情報 ---
         function updateStats() {
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = formatDate();
             const deliveredLetters = letters.filter(l => l.deliveryDate && l.deliveryDate <= todayStr);
             document.getElementById('written-letters').textContent = letters.length;
             document.getElementById('total-letters').textContent = deliveredLetters.length;
@@ -1006,7 +1012,7 @@
             for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = formatDate();
             
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
@@ -1052,7 +1058,7 @@
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ version: '2.0', letters }, null, 2));
             const downloadAnchorNode = document.createElement('a');
             downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", `future-letters-backup-${new Date().toISOString().split('T')[0]}.json`);
+            downloadAnchorNode.setAttribute("download", `future-letters-backup-${formatDate()}.json`);
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();

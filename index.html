@@ -872,6 +872,7 @@
                 <div id="modal-reply-form-container" style="margin-top: 1.5rem;"></div>
                 <div id="modal-buttons" style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end; align-items: center;">
                     <button class="btn" onclick="deleteLetter('${letterId}')" style="background-color: transparent; border-color: ${'var(--danger-color)'}; color: ${'var(--danger-color)'}; margin-right: auto;">削除</button>
+                    ${!letter.parentLetterId ? `<button class="btn btn-reply" onclick="showReplyFormInModal('${letter.id}')">返事を書く</button>` : ''}
                     <button class="btn btn-primary" onclick="closeModal()">閉じる</button>
                 </div>
             `;
